@@ -2,7 +2,9 @@
 
 ### Description
 
-A plugin for Apache Airflow that exposes rest end points for the Command Line Interfaces
+A plugin for Apache Airflow (https://github.com/apache/incubator-airflow) that exposes rest end points for the Command Line Interfaces listed in the airflow documentation:
+
+http://airflow.incubator.apache.org/cli.html
 
 ### Deployment Instructions
 
