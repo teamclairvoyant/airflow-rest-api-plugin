@@ -1,4 +1,3 @@
-from airflow import configuration
 from airflow.plugins_manager import AirflowPlugin
 from flask import request, jsonify
 from flask_admin import BaseView, expose
@@ -14,17 +13,18 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 """
 
 # todo: add validation to request params
+# todo: list available dags on admin page
 
 REST_API_BASE_URL = "/admin/restapi"  # NOTE: this will not override the actual Base URL to the endpoint. It is here just to fill out the bellow strings.
 VERSION_URL = "/api/v1.0/version"
 PAUSE_URL = "/api/v1.0/pause"
 UNPAUSE_URL = "/api/v1.0/unpause"
-DAG_STATE_URL = "/api/v1.0/dag_state"
-RUN_URL = "/api/v1.0/run"
-LIST_TASKS_URL = "/api/v1.0/list_tasks"
-BACKFILL_URL = "/api/v1.0/backfill"
-LIST_DAGS_URL = "/api/v1.0/list_dags"
-TASK_STATE_URL = "/api/v1.0/task_state"
+DAG_STATE_URL = "/api/v1.0/dag_state"       # todo: add api
+RUN_URL = "/api/v1.0/run"                   # todo: add api
+LIST_TASKS_URL = "/api/v1.0/list_tasks"     # todo: add api
+BACKFILL_URL = "/api/v1.0/backfill"         # todo: add api
+LIST_DAGS_URL = "/api/v1.0/list_dags"       # todo: add api
+TASK_STATE_URL = "/api/v1.0/task_state"     # todo: add api
 TRIGGER_DAG_URL = "/api/v1.0/trigger_dag"
 
 
@@ -37,6 +37,13 @@ class RESTAPI(BaseView):
 <body>
 
     <h1>Airflow REST API</h1>
+
+    <h2>Available DAGs:</h2
+    <ul>
+        <li>TODO: COMPLETE THIS</li>
+    </ul>
+
+    <h2>APIs</h2>
 
     <div>
         <h3>Version</h3>
@@ -135,6 +142,7 @@ class RESTAPI(BaseView):
 
     @expose(VERSION_URL)
     def version(self):
+        call_time = datetime.now()
         command_split = ["airflow", "version"]
 
         logging.info("command_split array: " + str(command_split))
@@ -143,10 +151,11 @@ class RESTAPI(BaseView):
 
         output = self.collect_process_output(process)
 
-        return jsonify({"status": "OK", "output": output})
+        return jsonify({"status": "OK", "output": output, "call_time": call_time, "response_time": datetime.now()})
 
     @expose(PAUSE_URL)
     def pause(self):
+        call_time = datetime.now()
         dag_id = request.args.get('dag_id')
         sd = request.args.get('sd')
 
@@ -162,10 +171,11 @@ class RESTAPI(BaseView):
 
         output = self.collect_process_output(process)
 
-        return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output})
+        return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output, "call_time": call_time, "response_time": datetime.now()})
 
     @expose(UNPAUSE_URL)
     def unpause(self):
+        call_time = datetime.now()
         dag_id = request.args.get('dag_id')
         sd = request.args.get('sd')
 
@@ -181,12 +191,13 @@ class RESTAPI(BaseView):
 
         output = self.collect_process_output(process)
 
-        return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output})
+        return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output, "call_time": call_time, "response_time": datetime.now()})
 
     @expose(TRIGGER_DAG_URL)
     def trigger_dag(self):
+        call_time = datetime.now()
         dag_id = request.args.get('dag_id')
-        execution_date = datetime.now().isoformat()
+        execution_date = call_time.isoformat()
         run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
         conf = request.args.get('conf')
 
@@ -202,7 +213,7 @@ class RESTAPI(BaseView):
 
         output = self.collect_process_output(process)
 
-        return jsonify({"status": "OK", "dag_id": dag_id, "run_id": run_id, "conf": conf, "output": output})
+        return jsonify({"status": "OK", "dag_id": dag_id, "run_id": run_id, "conf": conf, "output": output, "call_time": call_time, "response_time": datetime.now()})
 
     @staticmethod
     def collect_process_output(process):
