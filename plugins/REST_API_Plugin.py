@@ -2,12 +2,11 @@ from airflow.plugins_manager import AirflowPlugin
 from flask import request, jsonify
 from flask_admin import BaseView, expose
 from datetime import datetime
-
+from string import Template
 import logging
 import subprocess
 
 """
-
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 
 """
@@ -15,145 +14,44 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 # todo: add validation to request params
 # todo: list available dags on admin page
 
-REST_API_BASE_URL = "/admin/restapi"  # NOTE: this will not override the actual Base URL to the endpoint. It is here just to fill out the bellow strings.
-VERSION_URL = "/api/v1.0/version"
-PAUSE_URL = "/api/v1.0/pause"
-UNPAUSE_URL = "/api/v1.0/unpause"
-DAG_STATE_URL = "/api/v1.0/dag_state"       # todo: add api
-RUN_URL = "/api/v1.0/run"                   # todo: add api
-LIST_TASKS_URL = "/api/v1.0/list_tasks"     # todo: add api
-BACKFILL_URL = "/api/v1.0/backfill"         # todo: add api
-LIST_DAGS_URL = "/api/v1.0/list_dags"       # todo: add api
-TASK_STATE_URL = "/api/v1.0/task_state"     # todo: add api
-TRIGGER_DAG_URL = "/api/v1.0/trigger_dag"
+# NOTE: this will not override the actual Base URL to the endpoint. It is
+# here just to fill out the bellow strings.
 
+url_dict = dict(
+REST_API_BASE_URL = "/admin/restapi",       # Check with current version
+VERSION_URL = "/api/v1.0/version",          # Check with current version
+PAUSE_URL = "/api/v1.0/pause",              # Check with current version
+UNPAUSE_URL = "/api/v1.0/unpause",          # Check with current version
+RUN_URL = "/api/v1.0/run",                  # todo: add api
+LIST_TASKS_URL = "/api/v1.0/list_tasks",    # Check with current version
+BACKFILL_URL = "/api/v1.0/backfill",        # Done / Untested
+LIST_DAGS_URL = "/api/v1.0/list_dags",      # Working
+TASK_STATE_URL = "/api/v1.0/task_state",     # todo: add api
+TRIGGER_DAG_URL = "/api/v1.0/trigger_dag",  # Check with current version
+)
 
 class RESTAPI(BaseView):
 
     @expose('/')
     def index(self):
-        return """
-<html>
-<body>
+        f = open("/home/pbsureja/airflow/plugins/restClientTemplate.html","r")
+        return Template(f.read()).substitute(url_dict)
 
-    <h1>Airflow REST API</h1>
-
-    <h2>Available DAGs:</h2
-    <ul>
-        <li>TODO: COMPLETE THIS</li>
-    </ul>
-
-    <h2>APIs</h2>
-
-    <div>
-        <h3>Version</h3>
-        <h5>TODO: Create documentation</h5>
-        <h5>http://{HOSTNAME}:{PORT}""" + REST_API_BASE_URL + VERSION_URL + """</h5>
-        <div>
-            <form method="GET" action=" """ + REST_API_BASE_URL + VERSION_URL + """ ">
-                <table>
-                    <tr>
-                        <td></td>
-                        <td><input type="submit" value="Get Version"/></td>
-                    </tr>
-                </table>
-            </form>
-        </div>
-    </div>
-
-    <div>
-        <h3>Pause DAG</h3>
-        <h5>TODO: Create documentation</h5>
-        <h5>http://{HOSTNAME}:{PORT}""" + REST_API_BASE_URL + PAUSE_URL + """?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
-        <div>
-            <form method="GET" action=" """ + REST_API_BASE_URL + PAUSE_URL + """ ">
-                <table>
-                    <tr>
-                        <td>DAG ID:</td>
-                        <td><input type="text" name="dag_id"/></td>
-                    </tr>
-                    <tr>
-                        <td>SubDirectory (Optional):</td>
-                        <td><input type="text" name="sd"/></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><input type="submit" value="Pause DAG"/></td>
-                    </tr>
-                </table>
-            </form>
-        </div>
-    </div>
-
-    <div>
-        <h3>Unpause DAG</h3>
-        <h5>TODO: Create documentation</h5>
-        <h5>http://{HOSTNAME}:{PORT}""" + REST_API_BASE_URL + UNPAUSE_URL + """?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
-        <div>
-            <form method="GET" action=" """ + REST_API_BASE_URL + UNPAUSE_URL + """ ">
-                <table>
-                    <tr>
-                        <td>DAG ID:</td>
-                        <td><input type="text" name="dag_id"/></td>
-                    </tr>
-                    <tr>
-                        <td>SubDirectory (Optional):</td>
-                        <td><input type="text" name="sd"/></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><input type="submit" value="Unpause DAG"/></td>
-                    </tr>
-                </table>
-            </form>
-        </div>
-    </div>
-
-    <div>
-        <h3>Trigger DAG</h3>
-        <h5>TODO: Create documentation</h5>
-        <h5>http://{HOSTNAME}:{PORT}""" + REST_API_BASE_URL + TRIGGER_DAG_URL + """?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
-        <div>
-            <form method="GET" action=" """ + REST_API_BASE_URL + TRIGGER_DAG_URL + """ ">
-                <table>
-                    <tr>
-                        <td>DAG ID:</td>
-                        <td><input type="text" name="dag_id"/></td>
-                    </tr>
-                    <tr>
-                        <td>Run ID (Optional):</td>
-                        <td><input type="text" name="run_id"/></td>
-                    </tr>
-                    <tr>
-                        <td>Conf Json (Optional):</td>
-                        <td><input type="text" name="conf"/></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><input type="submit" value="Trigger DAG"/></td>
-                    </tr>
-                </table>
-            </form>
-        </div>
-    </div>
-
-</body>
-</html>"""
-
-    @expose(VERSION_URL)
+    @expose(url_dict.get("VERSION_URL"))
     def version(self):
         call_time = datetime.now()
         command_split = ["airflow", "version"]
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
 
         output = self.collect_process_output(process)
 
         return jsonify({"status": "OK", "output": output, "call_time": call_time, "response_time": datetime.now()})
 
-    @expose(PAUSE_URL)
+    @expose(url_dict.get("PAUSE_URL"))
     def pause(self):
         call_time = datetime.now()
         dag_id = request.args.get('dag_id')
@@ -166,14 +64,15 @@ class RESTAPI(BaseView):
         command_split.append(dag_id)
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
 
         output = self.collect_process_output(process)
 
         return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output, "call_time": call_time, "response_time": datetime.now()})
 
-    @expose(UNPAUSE_URL)
+    @expose(url_dict.get("UNPAUSE_URL"))
     def unpause(self):
         call_time = datetime.now()
         dag_id = request.args.get('dag_id')
@@ -186,34 +85,117 @@ class RESTAPI(BaseView):
         command_split.append(dag_id)
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
 
         output = self.collect_process_output(process)
 
         return jsonify({"status": "OK", "dag_id": dag_id, "sd": sd, "output": output, "call_time": call_time, "response_time": datetime.now()})
 
-    @expose(TRIGGER_DAG_URL)
+    @expose(url_dict.get("LIST_TASKS_URL"))
+    def listtasks(self):
+        call_time = datetime.now()
+        dag_id = request.args.get('dag_id')
+        sd = request.args.get('sd')
+        tree = request.args.get('tree')
+        execution_date = call_time.isoformat()
+        command_split = ["airflow", "list_tasks"]
+        if sd:
+            command_split.append("-sd")
+            command_split.append(sd)
+        if tree:
+            command_split.append("-t")
+            command_split.append(tree)
+        command_split.append(dag_id)
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return jsonify({"status": "OK", "dag_id": dag_id, "output": output, "call_time": call_time, "response_time": datetime.now()})
+
+    @expose(url_dict.get("TRIGGER_DAG_URL"))
     def trigger_dag(self):
         call_time = datetime.now()
         dag_id = request.args.get('dag_id')
         execution_date = call_time.isoformat()
-        run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
+        run_id = request.args.get(
+            'run_id') or "restapi_trig__" + execution_date
         conf = request.args.get('conf')
-
-        command_split = ["airflow", "trigger_dag", "--run_id", run_id]
+        command_split = ["airflow", "trigger_dag"]
+        if run_id is not None:
+            command_split.append("--run_id")
+            command_split.append(run_id)
         if conf is not None:
             command_split.append("--conf")
             command_split.append(conf)
         command_split.append(dag_id)
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
 
         output = self.collect_process_output(process)
 
         return jsonify({"status": "OK", "dag_id": dag_id, "run_id": run_id, "conf": conf, "output": output, "call_time": call_time, "response_time": datetime.now()})
+    
+    @expose(url_dict.get("BACKFILL_URL"))
+    def trigger_dag(self):
+        call_time = datetime.now()
+        dag_id = request.args.get('dag_id')
+        execution_date = call_time.isoformat()
+        command_split = ["airflow", "backfill"]
+        if task_regex is not None:
+             command_split.append("--task_regex")
+             command_split.append(task_regex)
+        if start_date is not None:
+             command_split.append("--start_date")
+             command_split.append(start_date)
+        if end_date is not None:
+             command_split.append("--end_date")
+             command_split.append(end_date)
+        if mark_success is not None:
+             command_split.append("--mark_success")
+             command_split.append(mark_success)
+        if local is not None:
+             command_split.append("--local")
+             command_split.append(local)
+        if donot_pickle is not None:
+             command_split.append("--donot_pickle")
+             command_split.append(donot_pickle)
+        if include_adhoc is not None:
+             command_split.append("--include_adhoc")
+             command_split.append(include_adhoc)
+        if ignore_dependencies is not None:
+             command_split.append("--ignore_dependencies")
+             command_split.append(ignore_dependencies)
+        if ignore_first_depends_on_past is not None:
+             command_split.append("--ignore_first_depends_on_past")
+             command_split.append(ignore_first_depends_on_past)
+        if subdir is not None:
+             command_split.append("--subdir")
+             command_split.append(subdir)
+        if pool is not None:
+             command_split.append("--pool")
+             command_split.append(pool)
+        if dry_run is not None:
+             command_split.append("--dry_run")
+             command_split.append(dry_run)
+        command_split.append(dag_id)
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return jsonify({"status": "OK", "dag_id": dag_id, "output": output, "call_time": call_time, "response_time": datetime.now()})
+
 
     @staticmethod
     def collect_process_output(process):

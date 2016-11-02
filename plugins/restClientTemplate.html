@@ -1,0 +1,192 @@
+<html>
+    <body>
+        <h1>Airflow REST API </h1>
+        <h2>Available DAGs:</h2
+        <ul>
+            <li>TODO: COMPLETE THIS</li>
+        </ul>
+        <h2>APIs</h2>
+        <div>
+            <h3>Version</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$VERSION_URL + </h5>
+            <div>
+                <form method="GET" action=$VERSION_URL>
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Get Version"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Pause DAG</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$PAUSE_URL?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <div>
+                <form method="GET" action=$PAUSE_URL>
+                    <table>
+                        <tr>
+                            <td>DAG ID:</td>
+                            <td><input type="text" name="dag_id"/></td>
+                        </tr>
+                        <tr>
+                            <td>SubDirectory (Optional):</td>
+                            <td><input type="text" name="sd"/></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Pause DAG"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Unpause DAG</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$UNPAUSE_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <div>
+                <form method="GET" action=UNPAUSE_URL>
+                    <table>
+                        <tr>
+                            <td>DAG ID:</td>
+                            <td><input type="text" name="dag_id"/></td>
+                        </tr>
+                        <tr>
+                            <td>SubDirectory (Optional):</td>
+                            <td><input type="text" name="sd"/></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Unpause DAG"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>List Current Tasks</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$LIST_TASKS_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <div>
+                <form method="GET" action=$LIST_TASKS_URL>
+                    <table>
+                        <tr>
+                            <td>DAG ID:</td>
+                            <td><input type="text" name="dag_id"/></td>
+                        </tr>
+                        <tr>
+                            <td>Disable tree view (Optional):</td>
+                            <td><input type="text" name="tree"/></td>
+                        </tr>
+                        <tr>
+                            <td>SubDirectory (Optional):</td>
+                            <td><input type="text" name="sd"/></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3> Backfill DAG</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$BACKFILL_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <div>
+                <form method="GET" action=$BACKFILL_URL>
+                    <table>
+                        <tr>
+                            <td>DAG ID:</td>
+                            <td><input type="text" name="dag_id"/></td>
+                        </tr>
+                        <tr>
+                            <td> task_regex (Optional):</td>
+                            <td><input type="text" name="task_regex"/></td>
+                        </tr>
+                        <tr>
+                            <td> start_date (Optional):</td>
+                            <td><input type="text" name="start_date"/></td>
+                        </tr>
+                        <tr>
+                            <td> end_date (Optional):</td>
+                            <td><input type="text" name="end_date"/></td>
+                        </tr>
+                        <tr>
+                            <td> mark_success (Optional):</td>
+                            <td><input type="text" name="mark_success"/></td>
+                        </tr>
+                        <tr>
+                            <td> local (Optional):</td>
+                            <td><input type="text" name="local"/></td>
+                        </tr>
+                        <tr>
+                            <td> donot_pickle (Optional):</td>
+                            <td><input type="text" name="donot_pickle"/></td>
+                        </tr>
+                        <tr>
+                            <td> include_adhoc (Optional):</td>
+                            <td><input type="text" name="include_adhoc"/></td>
+                        </tr>
+                        <tr>
+                            <td> ignore_dependencies (Optional):</td>
+                            <td><input type="text" name="ignore_dependencies"/></td>
+                        </tr>
+                        <tr>
+                            <td> ignore_first_depends_on_past (Optional):</td>
+                            <td><input type="text" name="ignore_first_depends_on_past"/></td>
+                        </tr>
+                        <tr>
+                            <td> subdir (Optional):</td>
+                            <td><input type="text" name="subdir"/></td>
+                        </tr>
+                        <tr>
+                            <td> pool (Optional):</td>
+                            <td><input type="text" name="pool"/></td>
+                        </tr>
+                        <tr>
+                            <td> dry_run (Optional):</td>
+                            <td><input type="text" name="dry_run"/></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Trigger DAG</h3>
+            <h5>TODO: Create documentation</h5>
+            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$TRIGGER_DAG_URL + ?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
+            <div>
+                <form method="GET" action=$TRIGGER_DAG_URL>
+                    <table>
+                        <tr>
+                            <td>DAG ID:</td>
+                            <td><input type="text" name="dag_id"/></td>
+                        </tr>
+                        <tr>
+                            <td>Run ID (Optional):</td>
+                            <td><input type="text" name="run_id"/></td>
+                        </tr>
+                        <tr>
+                            <td>Conf Json (Optional):</td>
+                            <td><input type="text" name="conf"/></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Trigger DAG"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
