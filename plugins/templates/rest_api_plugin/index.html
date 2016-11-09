@@ -1,7 +1,7 @@
 <html>
     <body>
         <h1>Airflow REST API </h1>
-        <h2>Available DAGs:</h2
+        <h2>Available DAGs:</h2>
         <ul>
             <li>TODO: COMPLETE THIS</li>
         </ul>
@@ -9,9 +9,9 @@
         <div>
             <h3>Version</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$VERSION_URL + </h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}</h5>
             <div>
-                <form method="GET" action=$VERSION_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}">
                     <table>
                         <tr>
                             <td></td>
@@ -24,9 +24,9 @@
         <div>
             <h3>Pause DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$PAUSE_URL?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
-                <form method="GET" action=$PAUSE_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}">
                     <table>
                         <tr>
                             <td>DAG ID:</td>
@@ -47,9 +47,9 @@
         <div>
             <h3>Unpause DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$UNPAUSE_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
-                <form method="GET" action=UNPAUSE_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}">
                     <table>
                         <tr>
                             <td>DAG ID:</td>
@@ -70,9 +70,9 @@
         <div>
             <h3>List Current Tasks</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$LIST_TASKS_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
-                <form method="GET" action=$LIST_TASKS_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}">
                     <table>
                         <tr>
                             <td>DAG ID:</td>
@@ -97,9 +97,9 @@
         <div>
             <h3> Backfill DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$BACKFILL_URL + ?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
-                <form method="GET" action=$BACKFILL_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}">
                     <table>
                         <tr>
                             <td>DAG ID:</td>
@@ -164,9 +164,9 @@
         <div>
             <h3>Trigger DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}$REST_API_BASE_URL$TRIGGER_DAG_URL + ?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id="{DAG_ID-REQUIRED}&run_id="{RUN_ID-OPTIONAL}&conf="{CONF_JSON-OPTIONAL}</h5>
             <div>
-                <form method="GET" action=$TRIGGER_DAG_URL>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}">
                     <table>
                         <tr>
                             <td>DAG ID:</td>
