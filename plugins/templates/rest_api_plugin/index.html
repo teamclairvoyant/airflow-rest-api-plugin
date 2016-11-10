@@ -24,7 +24,7 @@
         <div>
             <h3>Pause DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}">
                     <table>
@@ -34,7 +34,7 @@
                         </tr>
                         <tr>
                             <td>SubDirectory (Optional):</td>
-                            <td><input type="text" name="sd"/></td>
+                            <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
                             <td></td>
@@ -47,7 +47,7 @@
         <div>
             <h3>Unpause DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}">
                     <table>
@@ -57,7 +57,7 @@
                         </tr>
                         <tr>
                             <td>SubDirectory (Optional):</td>
-                            <td><input type="text" name="sd"/></td>
+                            <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
                             <td></td>
@@ -70,7 +70,7 @@
         <div>
             <h3>List Current Tasks</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}">
                     <table>
@@ -80,11 +80,11 @@
                         </tr>
                         <tr>
                             <td>Disable tree view (Optional):</td>
-                            <td><input type="text" name="tree"/></td>
+                            <td><input type="checkbox" name="tree"/></td>
                         </tr>
                         <tr>
                             <td>SubDirectory (Optional):</td>
-                            <td><input type="text" name="sd"/></td>
+                            <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
                             <td></td>
@@ -95,9 +95,9 @@
             </div>
         </div>
         <div>
-            <h3> Backfill DAG</h3>
+            <h3>Backfill DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id="{DAG_ID-REQUIRED}&sb="{SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}">
                     <table>
@@ -119,27 +119,27 @@
                         </tr>
                         <tr>
                             <td> mark_success (Optional):</td>
-                            <td><input type="text" name="mark_success"/></td>
+                            <td><input type="checkbox" name="mark_success"/></td>
                         </tr>
                         <tr>
                             <td> local (Optional):</td>
-                            <td><input type="text" name="local"/></td>
+                            <td><input type="checkbox" name="local"/></td>
                         </tr>
                         <tr>
                             <td> donot_pickle (Optional):</td>
-                            <td><input type="text" name="donot_pickle"/></td>
+                            <td><input type="checkbox" name="donot_pickle"/></td>
                         </tr>
                         <tr>
                             <td> include_adhoc (Optional):</td>
-                            <td><input type="text" name="include_adhoc"/></td>
+                            <td><input type="checkbox" name="include_adhoc"/></td>
                         </tr>
                         <tr>
                             <td> ignore_dependencies (Optional):</td>
-                            <td><input type="text" name="ignore_dependencies"/></td>
+                            <td><input type="checkbox" name="ignore_dependencies"/></td>
                         </tr>
                         <tr>
                             <td> ignore_first_depends_on_past (Optional):</td>
-                            <td><input type="text" name="ignore_first_depends_on_past"/></td>
+                            <td><input type="checkbox" name="ignore_first_depends_on_past"/></td>
                         </tr>
                         <tr>
                             <td> subdir (Optional):</td>
@@ -151,7 +151,7 @@
                         </tr>
                         <tr>
                             <td> dry_run (Optional):</td>
-                            <td><input type="text" name="dry_run"/></td>
+                            <td><input type="checkbox" name="dry_run"/></td>
                         </tr>
                         <tr>
                             <td></td>
@@ -164,7 +164,7 @@
         <div>
             <h3>Trigger DAG</h3>
             <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id="{DAG_ID-REQUIRED}&run_id="{RUN_ID-OPTIONAL}&conf="{CONF_JSON-OPTIONAL}</h5>
+            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}">
                     <table>
