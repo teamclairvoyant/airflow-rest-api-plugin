@@ -53,10 +53,41 @@ class REST_API(BaseView):
         base_response = self.get_base_response()
         return self.get_final_response(base_response, airflow.__version__)
 
-    # todo: implement
+    # todo: test
     @expose(url_dict.get("VARIABLES_URL"))
     def variables(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        set = request.args.get('set')
+        get = request.args.get('get')
+        default = request.args.get('default')
+        import_arg = request.args.get('import')
+        export = request.args.get('export')
+        delete = request.args.get('delete')
+
+        command_split = ["airflow", "variables"]
+        if set:
+            command_split.extend(["--set", set])
+        if get:
+            command_split.extend(["--get", get])
+        if request.args.get("json") is not None:
+            command_split.append("--json")
+        if default:
+            command_split.extend(["--default", default])
+        if import_arg:
+            command_split.extend(["--import_arg", import_arg])
+        if export:
+            command_split.extend(["--export", export])
+        if delete:
+            command_split.extend(["--delete", delete])
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
 
     @expose(url_dict.get("PAUSE_URL"))
     def pause(self):
@@ -104,20 +135,118 @@ class REST_API(BaseView):
 
         return self.get_final_response(base_response, output)
 
-    # todo: implement
+    # todo: test
     @expose(url_dict.get("TEST_URL"))
     def test(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
+        task_id = request.args.get('task_id')
+        execution_date = request.args.get('execution_date')
+        subdir = request.args.get('subdir')
+        task_params = request.args.get('task_params')
 
-    # todo: implement
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
+        if task_id is None:
+            raise ValueError("task_id should be provided")
+        if execution_date is None:
+            raise ValueError("execution_date should be provided")
+
+        command_split = ["airflow", "test"]
+        if subdir:
+            command_split.extend(["--subdir", subdir])
+        if request.args.get("dry_run") is not None:
+            command_split.append("--dry_run")
+        if task_params:
+            command_split.extend(["--task_params", task_params])
+        command_split.append(dag_id)
+        command_split.append(task_id)
+        command_split.append(execution_date)
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("DAG_STATE_URL"))
     def dag_state(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
+        execution_date = request.args.get('execution_date')
+        subdir = request.args.get('subdir')
 
-    # todo: implement
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
+        if execution_date is None:
+            raise ValueError("execution_date should be provided")
+
+        command_split = ["airflow", "dag_state"]
+        if subdir:
+            command_split.extend(["--subdir", subdir])
+        command_split.append(dag_id)
+        command_split.append(execution_date)
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("RUN_URL"))
     def run(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
+        task_id = request.args.get('task_id')
+        execution_date = request.args.get('execution_date')
+        subdir = request.args.get('subdir')
+        pool = request.args.get('pool')
+        pickle = request.args.get('pickle')
+
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
+        if task_id is None:
+            raise ValueError("task_id should be provided")
+        if execution_date is None:
+            raise ValueError("execution_date should be provided")
+
+        command_split = ["airflow", "run"]
+        if subdir is not None:
+            command_split.extend(["--subdir", subdir])
+        if request.args.get('mark_success') is not None:
+            command_split.append("--mark_success")
+        if pool is not None:
+            command_split.extend(["--pool", pool])
+        if request.args.get('local') is not None:
+            command_split.append("--local")
+        if request.args.get('ignore_dependencies') is not None:
+            command_split.append("--ignore_dependencies")
+        if request.args.get('ignore_first_depends_on_past') is not None:
+            command_split.append("--ignore_first_depends_on_past")
+        if request.args.get('ship_dag') is not None:
+            command_split.append("--ship_dag")
+        if pickle is not None:
+            command_split.extend(["--task_regex", pickle])
+        command_split.append(dag_id)
+        command_split.append(task_id)
+        command_split.append(execution_date)
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
 
     @expose(url_dict.get("LIST_TASKS_URL"))
     def list_tasks(self):
@@ -193,30 +322,178 @@ class REST_API(BaseView):
 
         return self.get_final_response(base_response, output)
 
-    # todo: implement
+    # todo: test
     @expose(url_dict.get("LIST_DAGS_URL"))
     def list_dags(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        subdir = request.args.get('subdir')
 
-    # todo: implement
+        command_split = ["airflow", "list_dags"]
+        if subdir:
+            command_split.extend(["--subdir", subdir])
+        if request.args.get("report"):
+            command_split.append("--report")
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("KERBEROS_URL"))
     def kerberos(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        principal = request.args.get('principal')
+        keytab = request.args.get('keytab')
+        pid = request.args.get('pid')
+        stdout = request.args.get('stdout')
+        stderr = request.args.get('stderr')
+        log_file = request.args.get('log-file')
 
-    # todo: implement
+        if principal is None:
+            raise ValueError("principal should be provided")
+
+        command_split = ["airflow", "kerberos"]
+        if keytab:
+            command_split.extend(["--keytab", keytab])
+        if pid:
+            command_split.extend(["--pid", pid])
+        if request.args.get("daemon"):
+            command_split.append("--daemon")
+        if stdout:
+            command_split.extend(["--stdout", stdout])
+        if stderr:
+            command_split.extend(["--stderr", stderr])
+        if log_file:
+            command_split.extend(["--log-file", log_file])
+
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("WORKER_URL"))
     def worker(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        queues = request.args.get('queues')
+        concurrency = request.args.get('concurrency')
+        pid = request.args.get('pid')
+        stdout = request.args.get('stdout')
+        stderr = request.args.get('stderr')
+        log_file = request.args.get('log-file')
 
-    # todo: implement
+        command_split = ["airflow", "worker"]
+        if request.args.get("do_pickle"):
+            command_split.append("--do_pickle")
+        if queues:
+            command_split.extend(["--queues", queues])
+        if concurrency:
+            command_split.extend(["--concurrency", concurrency])
+        if pid:
+            command_split.extend(["--pid", pid])
+        if request.args.get("daemon"):
+            command_split.append("--daemon")
+        if stdout:
+            command_split.extend(["--stdout", stdout])
+        if stderr:
+            command_split.extend(["--stderr", stderr])
+        if log_file:
+            command_split.extend(["--log-file", log_file])
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("SCHEDULER_URL"))
     def scheduler(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
+        subdir = request.args.get('subdir')
+        run_duration = request.args.get('run-duration')
+        num_runs = request.args.get('num_runs')
+        pid = request.args.get('pid')
+        stdout = request.args.get('stdout')
+        stderr = request.args.get('stderr')
+        log_file = request.args.get('log-file')
 
-    # todo: implement
+        command_split = ["airflow", "scheduler"]
+        if dag_id:
+            command_split.extend(["--dag_id", dag_id])
+        if subdir:
+            command_split.extend(["--subdir", subdir])
+        if run_duration:
+            command_split.extend(["--run-duration", run_duration])
+        if num_runs:
+            command_split.extend(["--num_runs", num_runs])
+        if request.args.get("do_pickle"):
+            command_split.append("--do_pickle")
+        if pid:
+            command_split.extend(["--pid", pid])
+        if request.args.get("daemon"):
+            command_split.append("--daemon")
+        if stdout:
+            command_split.extend(["--stdout", stdout])
+        if stderr:
+            command_split.extend(["--stderr", stderr])
+        if log_file:
+            command_split.extend(["--log-file", log_file])
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
+
+    # todo: test
     @expose(url_dict.get("TASK_STATE_URL"))
     def task_state(self):
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
+        task_id = request.args.get('task_id')
+        execution_date = request.args.get('execution_date')
+        subdir = request.args.get('subdir')
+
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
+        if task_id is None:
+            raise ValueError("task_id should be provided")
+        if execution_date is None:
+            raise ValueError("execution_date should be provided")
+
+        command_split = ["airflow", "task_state"]
+        if subdir:
+            command_split.extend(["--subdir", subdir])
+        command_split.append(dag_id)
+        command_split.append(task_id)
+        command_split.append(execution_date)
+
+        logging.info("command_split array: " + str(command_split))
+        process = subprocess.Popen(
+            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+
+        output = self.collect_process_output(process)
+
+        return self.get_final_response(base_response, output)
 
     @expose(url_dict.get("TRIGGER_DAG_URL"))
     def trigger_dag(self):
