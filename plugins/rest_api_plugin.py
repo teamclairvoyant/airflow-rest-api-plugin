@@ -9,12 +9,13 @@ from datetime import datetime
 import airflow
 import logging
 import subprocess
+import urllib2
+import os
 
 """
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: add validation to request params
 # todo: display the output of the commands nicer
 
 url_dict = dict(
@@ -38,14 +39,15 @@ url_dict = dict(
     DEPLOY_DAG_URL="/api/v1.0/deploy_dag"
 )
 
+airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
+dags_folder = configuration.get('core', 'DAGS_FOLDER')
+
 
 class REST_API(BaseView):
 
     @expose('/')
     def index(self):
         dagbag = DagBag()
-        # todo: get hostname and
-        airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
         return self.render("rest_api_plugin/index.html", dags=dagbag.dags, airflow_webserver_base_url=airflow_webserver_base_url, url_dict=url_dict)
 
     @expose(url_dict.get("VERSION_URL"))
@@ -524,16 +526,36 @@ class REST_API(BaseView):
 
         return self.get_final_response(base_response, output)
 
-    # todo: implement
+    # todo: test
     @expose(url_dict.get("REFRESH_DAG_URL"))
     def refresh_dag(self):
         # Call: http://localhost:5555/admin/airflow/refresh?dag_id=test_hadoop_operators
-        raise NotImplementedError
+        base_response = self.get_base_response()
+        dag_id = request.args.get('dag_id')
 
-    # todo: implement
-    @expose(url_dict.get("DEPLOY_DAG_URL"))
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
+
+        response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
+        html = response.read()
+        logging.info(html)
+        return self.get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
+
+    # todo: test
+    @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
     def deploy_dag(self):
-        raise NotImplementedError
+        # check if the post request has the file part
+        if 'dag_file' not in request.files:
+            raise ValueError("dag_file should be provided")
+        dag_file = request.files['dag_file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if dag_file.filename == '':
+            raise ValueError("dag_file should be provided")
+        if dag_file and dag_file.filename.endswith(".py"):
+            dag_file.save(os.path.join(dags_folder, dag_file.filename))
+        else:
+            raise ValueError("dag_file is not a *.py file")
 
     @staticmethod
     def collect_process_output(process):
