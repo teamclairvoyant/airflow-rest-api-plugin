@@ -1,4 +1,6 @@
+from airflow.models import DagBag
 from airflow.plugins_manager import AirflowPlugin
+from airflow import configuration
 
 from flask import Blueprint, request, jsonify
 from flask_admin import BaseView, expose
@@ -13,23 +15,23 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 """
 
 # todo: add validation to request params
-# todo: list available dags on admin page
 # todo: display the output of the commands nicer
 
 url_dict = dict(
     REST_API_BASE_URL="/admin/rest_api",
     VERSION_URL="/api/v1.0/version",
-    VARIABLES_URL="/api/v1.0/variables",    # todo: add api
+    VARIABLES_URL="/api/v1.0/variables",
     PAUSE_URL="/api/v1.0/pause",
     UNPAUSE_URL="/api/v1.0/unpause",
-    TEST_URL="/api/v1.0/test",              # todo: add api
-    DAG_STATE_URL="/api/v1.0/dag_state",    # todo: add api
+    TEST_URL="/api/v1.0/test",
+    DAG_STATE_URL="/api/v1.0/dag_state",
     RUN_URL="/api/v1.0/run",
     LIST_TASKS_URL="/api/v1.0/list_tasks",
     BACKFILL_URL="/api/v1.0/backfill",
     LIST_DAGS_URL="/api/v1.0/list_dags",
-    KERBEROS_URL="/api/v1.0/kerberos",      # todo: add api - should this be added?
-    WORKER_URL="/api/v1.0/worker",          # todo: add api - should this be added?
+    KERBEROS_URL="/api/v1.0/kerberos",
+    WORKER_URL="/api/v1.0/worker",
+    SCHEDULER_URL="/api/v1.0/scheduler",
     TASK_STATE_URL="/api/v1.0/task_state",
     TRIGGER_DAG_URL="/api/v1.0/trigger_dag",
     REFRESH_DAG_URL="/api/v1.0/refresh_dag",
@@ -41,13 +43,20 @@ class REST_API(BaseView):
 
     @expose('/')
     def index(self):
-        # todo: get available dags
-        return self.render("rest_api_plugin/index.html", url_dict=url_dict)
+        dagbag = DagBag()
+        # todo: get hostname and
+        airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
+        return self.render("rest_api_plugin/index.html", dags=dagbag.dags, airflow_webserver_base_url=airflow_webserver_base_url, url_dict=url_dict)
 
     @expose(url_dict.get("VERSION_URL"))
     def version(self):
         base_response = self.get_base_response()
         return self.get_final_response(base_response, airflow.__version__)
+
+    # todo: implement
+    @expose(url_dict.get("VARIABLES_URL"))
+    def variables(self):
+        raise NotImplementedError
 
     @expose(url_dict.get("PAUSE_URL"))
     def pause(self):
@@ -55,7 +64,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        # todo: validate inputs
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
 
         command_split = ["airflow", "pause"]
         if subdir:
@@ -77,7 +87,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        # todo: validate inputs
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
 
         command_split = ["airflow", "unpause"]
         if subdir:
@@ -94,6 +105,16 @@ class REST_API(BaseView):
         return self.get_final_response(base_response, output)
 
     # todo: implement
+    @expose(url_dict.get("TEST_URL"))
+    def test(self):
+        raise NotImplementedError
+
+    # todo: implement
+    @expose(url_dict.get("DAG_STATE_URL"))
+    def dag_state(self):
+        raise NotImplementedError
+
+    # todo: implement
     @expose(url_dict.get("RUN_URL"))
     def run(self):
         raise NotImplementedError
@@ -104,7 +125,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        # todo: validate inputs
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
 
         command_split = ["airflow", "list_tasks"]
         if subdir:
@@ -132,7 +154,8 @@ class REST_API(BaseView):
         subdir = request.args.get('subdir')
         pool = request.args.get('pool')
 
-        # todo: validate inputs
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
 
         command_split = ["airflow", "backfill"]
         if task_regex is not None:
@@ -176,6 +199,21 @@ class REST_API(BaseView):
         raise NotImplementedError
 
     # todo: implement
+    @expose(url_dict.get("KERBEROS_URL"))
+    def kerberos(self):
+        raise NotImplementedError
+
+    # todo: implement
+    @expose(url_dict.get("WORKER_URL"))
+    def worker(self):
+        raise NotImplementedError
+
+    # todo: implement
+    @expose(url_dict.get("SCHEDULER_URL"))
+    def scheduler(self):
+        raise NotImplementedError
+
+    # todo: implement
     @expose(url_dict.get("TASK_STATE_URL"))
     def task_state(self):
         raise NotImplementedError
@@ -189,7 +227,8 @@ class REST_API(BaseView):
         run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
         conf = request.args.get('conf')
 
-        # todo: validate inputs
+        if dag_id is None:
+            raise ValueError("dag_id should be provided")
 
         command_split = ["airflow", "trigger_dag"]
         if run_id is not None:

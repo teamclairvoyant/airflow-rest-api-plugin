@@ -3,13 +3,15 @@
         <h1>Airflow REST API </h1>
         <h2>Available DAGs:</h2>
         <ul>
-            <li>TODO: COMPLETE THIS</li>
+            {% for dag in dags %}
+                <li>{{dag}}</li>
+            {% endfor %}
         </ul>
         <h2>APIs</h2>
         <div>
             <h3>Version</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}</h5>
+            <h5>Displays the version of Airflow you're using</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}">
                     <table>
@@ -22,18 +24,33 @@
             </div>
         </div>
         <div>
+            <h3>Variables</h3>
+            <h5>List all variables</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="List Variables"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
             <h3>Pause DAG</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>Pauses a DAG</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}">
                     <table>
                         <tr>
-                            <td>DAG ID:</td>
+                            <td>dag_id:</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td>SubDirectory (Optional):</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
@@ -46,17 +63,17 @@
         </div>
         <div>
             <h3>Unpause DAG</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>Resume a paused DAG</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}">
                     <table>
                         <tr>
-                            <td>DAG ID:</td>
+                            <td>dag_id:</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td>SubDirectory (Optional):</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
@@ -68,27 +85,72 @@
             </div>
         </div>
         <div>
-            <h3>List Current Tasks</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h3>Test</h3>
+            <h5>Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="TEST"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>DAG State</h3>
+            <h5>Get the status of a dag run</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="TEST"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Run</h3>
+            <h5>Run a single task instance</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Run"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>List Tasks</h3>
+            <h5>List the tasks within a DAG</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}">
                     <table>
                         <tr>
-                            <td>DAG ID:</td>
+                            <td>dag_id:</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td>Disable tree view (Optional):</td>
+                            <td>tree (Optional):</td>
                             <td><input type="checkbox" name="tree"/></td>
                         </tr>
                         <tr>
-                            <td>SubDirectory (Optional):</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
                             <td></td>
-                            <td><input type="submit"/></td>
+                            <td><input type="submit" value="List Tasks"/></td>
                         </tr>
                     </table>
                 </form>
@@ -96,33 +158,33 @@
         </div>
         <div>
             <h3>Backfill DAG</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>Run subsections of a DAG for a specified date range</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}">
                     <table>
                         <tr>
-                            <td>DAG ID:</td>
+                            <td>dag_id:</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td> task_regex (Optional):</td>
+                            <td>task_regex (Optional):</td>
                             <td><input type="text" name="task_regex"/></td>
                         </tr>
                         <tr>
-                            <td> start_date (Optional):</td>
+                            <td>start_date (Optional):</td>
                             <td><input type="text" name="start_date"/></td>
                         </tr>
                         <tr>
-                            <td> end_date (Optional):</td>
+                            <td>end_date (Optional):</td>
                             <td><input type="text" name="end_date"/></td>
                         </tr>
                         <tr>
-                            <td> mark_success (Optional):</td>
+                            <td>mark_success (Optional):</td>
                             <td><input type="checkbox" name="mark_success"/></td>
                         </tr>
                         <tr>
-                            <td> local (Optional):</td>
+                            <td>local (Optional):</td>
                             <td><input type="checkbox" name="local"/></td>
                         </tr>
                         <tr>
@@ -130,32 +192,92 @@
                             <td><input type="checkbox" name="donot_pickle"/></td>
                         </tr>
                         <tr>
-                            <td> include_adhoc (Optional):</td>
+                            <td>include_adhoc (Optional):</td>
                             <td><input type="checkbox" name="include_adhoc"/></td>
                         </tr>
                         <tr>
-                            <td> ignore_dependencies (Optional):</td>
+                            <td>ignore_dependencies (Optional):</td>
                             <td><input type="checkbox" name="ignore_dependencies"/></td>
                         </tr>
                         <tr>
-                            <td> ignore_first_depends_on_past (Optional):</td>
+                            <td>ignore_first_depends_on_past (Optional):</td>
                             <td><input type="checkbox" name="ignore_first_depends_on_past"/></td>
                         </tr>
                         <tr>
-                            <td> subdir (Optional):</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
-                            <td> pool (Optional):</td>
+                            <td>pool (Optional):</td>
                             <td><input type="text" name="pool"/></td>
                         </tr>
                         <tr>
-                            <td> dry_run (Optional):</td>
+                            <td>dry_run (Optional):</td>
                             <td><input type="checkbox" name="dry_run"/></td>
                         </tr>
                         <tr>
                             <td></td>
-                            <td><input type="submit"/></td>
+                            <td><input type="submit" value="Run Backfill"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>List Dags</h3>
+            <h5>List all the DAGs</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="List Dags"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Kerberos</h3>
+            <h5>Start a kerberos ticket renewer</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Start Kerberos Ticekt Renewer"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Workers</h3>
+            <h5>Start a Celery worker node</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Start Workers"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Scheduler</h3>
+            <h5>Start a scheduler instance</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Start Scheduler"/></td>
                         </tr>
                     </table>
                 </form>
@@ -163,26 +285,56 @@
         </div>
         <div>
             <h3>Trigger DAG</h3>
-            <h5>TODO: Create documentation</h5>
-            <h5>http://{HOSTNAME}:{PORT}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
+            <h5>Trigger a DAG run</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}">
                     <table>
                         <tr>
-                            <td>DAG ID:</td>
+                            <td>dag_id:</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td>Run ID (Optional):</td>
+                            <td>run_id (Optional):</td>
                             <td><input type="text" name="run_id"/></td>
                         </tr>
                         <tr>
-                            <td>Conf Json (Optional):</td>
+                            <td>conf (json) (Optional):</td>
                             <td><input type="text" name="conf"/></td>
                         </tr>
                         <tr>
                             <td></td>
                             <td><input type="submit" value="Trigger DAG"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Refresh DAG</h3>
+            <h5>Refresh a DAG</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('REFRESH_DAG_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('REFRESH_DAG_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Refresh DAG"/></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div>
+            <h3>Deploy DAG</h3>
+            <h5>Deploy a new DAG</h5>
+            <h5>{{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>
+            <div>
+                <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}">
+                    <table>
+                        <tr>
+                            <td></td>
+                            <td><input type="submit" value="Deploy DAG"/></td>
                         </tr>
                     </table>
                 </form>
