@@ -529,7 +529,6 @@ class REST_API(BaseView):
     # todo: test
     @expose(url_dict.get("REFRESH_DAG_URL"))
     def refresh_dag(self):
-        # Call: http://localhost:5555/admin/airflow/refresh?dag_id=test_hadoop_operators
         base_response = self.get_base_response()
         dag_id = request.args.get('dag_id')
 
@@ -541,21 +540,21 @@ class REST_API(BaseView):
         logging.info(html)
         return self.get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
 
-    # todo: test
-    @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
-    def deploy_dag(self):
-        # check if the post request has the file part
-        if 'dag_file' not in request.files:
-            raise ValueError("dag_file should be provided")
-        dag_file = request.files['dag_file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if dag_file.filename == '':
-            raise ValueError("dag_file should be provided")
-        if dag_file and dag_file.filename.endswith(".py"):
-            dag_file.save(os.path.join(dags_folder, dag_file.filename))
-        else:
-            raise ValueError("dag_file is not a *.py file")
+    # # todo: exempt this from using csrf tokens
+    # @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
+    # def deploy_dag(self):
+    #     # check if the post request has the file part
+    #     if 'dag_file' not in request.files:
+    #         raise ValueError("dag_file should be provided")
+    #     dag_file = request.files['dag_file']
+    #     # if user does not select file, browser also
+    #     # submit a empty part without filename
+    #     if dag_file.filename == '':
+    #         raise ValueError("dag_file should be provided")
+    #     if dag_file and dag_file.filename.endswith(".py"):
+    #         dag_file.save(os.path.join(dags_folder, dag_file.filename))
+    #     else:
+    #         raise ValueError("dag_file is not a *.py file")
 
     @staticmethod
     def collect_process_output(process):

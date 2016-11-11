@@ -26,36 +26,37 @@
         <div>
             <h3>Variables</h3>
             <h5>List all variables</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}?set={SET-OPTIONAL}
+                &get={GET-OPTIONAL}&json{OPTIONAL}&default={DEFAULT-OPTIONAL}&import={IMPORT-OPTIONAL}&export={EXPORT-OPTIONAL}&delete={DELETE-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}">
                     <table>
                         <tr>
-                            <td>set:</td>
+                            <td>set (Optional):</td>
                             <td><input type="text" name="set"/></td>
                         </tr>
                         <tr>
-                            <td>get:</td>
+                            <td>get (Optional):</td>
                             <td><input type="text" name="get"/></td>
                         </tr>
                         <tr>
-                            <td>json:</td>
+                            <td>json (Optional):</td>
                             <td><input type="checkbox" name="json"/></td>
                         </tr>
                         <tr>
-                            <td>default:</td>
+                            <td>default (Optional):</td>
                             <td><input type="text" name="default"/></td>
                         </tr>
                         <tr>
-                            <td>import:</td>
+                            <td>import (Optional):</td>
                             <td><input type="text" name="import"/></td>
                         </tr>
                         <tr>
-                            <td>export:</td>
+                            <td>export (Optional):</td>
                             <td><input type="text" name="export"/></td>
                         </tr>
                         <tr>
-                            <td>delete:</td>
+                            <td>delete (Optional):</td>
                             <td><input type="text" name="delete"/></td>
                         </tr>
                         <tr>
@@ -69,7 +70,7 @@
         <div>
             <h3>Pause DAG</h3>
             <h5>Pauses a DAG</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}">
                     <table>
@@ -92,7 +93,7 @@
         <div>
             <h3>Unpause DAG</h3>
             <h5>Resume a paused DAG</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}">
                     <table>
@@ -115,7 +116,9 @@
         <div>
             <h3>Test</h3>
             <h5>Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}?dag_id={DAG_ID-REQUIRED}
+                &task_id={TASK_ID-OPTIONAL}&execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&dry_run{DRY_RUN-OPTIONAL}
+                &task_params={TASK_PARAMS-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}">
                     <table>
@@ -132,15 +135,15 @@
                             <td><input type="text" name="execution_date"/></td>
                         </tr>
                         <tr>
-                            <td>subdir:</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
-                            <td>dry_run:</td>
+                            <td>dry_run (Optional):</td>
                             <td><input type="checkbox" name="dry_run"/></td>
                         </tr>
                         <tr>
-                            <td>task_params:</td>
+                            <td>task_params (Optional):</td>
                             <td><input type="text" name="task_params"/></td>
                         </tr>
                         <tr>
@@ -154,7 +157,8 @@
         <div>
             <h3>DAG State</h3>
             <h5>Get the status of a dag run</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}?dag_id={DAG_ID-REQUIRED}
+                &execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}">
                     <table>
@@ -167,7 +171,7 @@
                             <td><input type="text" name="execution_date"/></td>
                         </tr>
                         <tr>
-                            <td>subdir:</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
@@ -181,7 +185,10 @@
         <div>
             <h3>Run</h3>
             <h5>Run a single task instance</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}?dag_id={DAG_ID-REQUIRED}
+                &task_id={TASK_ID-OPTIONAL}&execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&mark_success{MARK_SUCCESS-OPTIONAL}
+                &force{FORCE-OPTIONAL}&pool={PEOPLE-OPTIONAL}&local{LOCAL-OPTIONAL}&ignore_dependencies{IGNORE_DEPENDENCIES-OPTIONAL}
+                &ignore_depends_on_past{IGNORE_DEPENDS_ON_PAST-OPTIONAL}&ship_dag{SHIP_DAG-OPTIONAL}&pickle={PICKLE-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}">
                     <table>
@@ -198,39 +205,39 @@
                             <td><input type="text" name="execution_date"/></td>
                         </tr>
                         <tr>
-                            <td>subdir:</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
-                            <td>mark_success:</td>
+                            <td>mark_success (Optional):</td>
                             <td><input type="checkbox" name="mark_success"/></td>
                         </tr>
                         <tr>
-                            <td>force:</td>
+                            <td>force (Optional):</td>
                             <td><input type="checkbox" name="force"/></td>
                         </tr>
                         <tr>
-                            <td>pool:</td>
+                            <td>pool (Optional):</td>
                             <td><input type="text" name="pool"/></td>
                         </tr>
                         <tr>
-                            <td>local:</td>
+                            <td>local (Optional):</td>
                             <td><input type="checkbox" name="local"/></td>
                         </tr>
                         <tr>
-                            <td>ignore_dependencies:</td>
+                            <td>ignore_dependencies (Optional):</td>
                             <td><input type="checkbox" name="ignore_dependencies"/></td>
                         </tr>
                         <tr>
-                            <td>ignore_depends_on_past:</td>
+                            <td>ignore_depends_on_past (Optional):</td>
                             <td><input type="checkbox" name="ignore_depends_on_past"/></td>
                         </tr>
                         <tr>
-                            <td>ship_dag:</td>
+                            <td>ship_dag (Optional):</td>
                             <td><input type="checkbox" name="ship_dag"/></td>
                         </tr>
                         <tr>
-                            <td>pickle:</td>
+                            <td>pickle (Optional):</td>
                             <td><input type="text" name="pickle"/></td>
                         </tr>
                         <tr>
@@ -244,7 +251,7 @@
         <div>
             <h3>List Tasks</h3>
             <h5>List the tasks within a DAG</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&tree{TREE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}">
                     <table>
@@ -271,7 +278,10 @@
         <div>
             <h3>Backfill DAG</h3>
             <h5>Run subsections of a DAG for a specified date range</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id={DAG_ID-REQUIRED}&sb={SUB_DIRECTORY-OPTIONAL}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}?dag_id={DAG_ID-REQUIRED}
+                &task_regex={TASK_REGEX-OPTIONAL}&start_date={START_DATE-OPTIONAL}&end_date={END_DATE-OPTIONAL}&mark_success{MARK_SUCCESS-OPTIONAL}
+                &local{LOCAL-OPTIONAL}&donot_pickle{DO_NOT_PICKLE-OPTIONAL}&include_adhoc{INCLUDE_ADHOC-OPTIONAL}&ignore_dependencies{IGNORE_DEPENDENCIES-OPTIONAL}
+                &ignore_first_depends_on_past{IGNORE_FIRST_DEPENDS_ON_PAST-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&pool={POOL-OPTIONAL}&dry_run{DRY_RUN-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}">
                     <table>
@@ -300,7 +310,7 @@
                             <td><input type="checkbox" name="local"/></td>
                         </tr>
                         <tr>
-                            <td> donot_pickle (Optional):</td>
+                            <td>donot_pickle (Optional):</td>
                             <td><input type="checkbox" name="donot_pickle"/></td>
                         </tr>
                         <tr>
@@ -338,16 +348,17 @@
         <div>
             <h3>List Dags</h3>
             <h5>List all the DAGs</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}?subdir={SUB_DIRECTORY-REQUIRED}
+                &report={REPORT-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}">
                     <table>
                         <tr>
-                            <td>subdir:</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
-                            <td>report:</td>
+                            <td>report (Optional):</td>
                             <td><input type="checkbox" name="report"/></td>
                         </tr>
                         <tr>
@@ -361,7 +372,8 @@
         <div>
             <h3>Kerberos</h3>
             <h5>Start a kerberos ticket renewer</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}?principal={PRINCIPAL-REQUIRED}
+                &keytab={KEYTAB-OPTIONAL}&pid={PID_FILE-OPTIONAL}&daemon{DAEMON-OPTIONAL}&stdout={STDOUT_FILE-OPTIONAL}&stderr={STDERR_FILE-OPTIONAL}&log-file={LOG_FILE-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}">
                     <table>
@@ -370,27 +382,27 @@
                             <td><input type="text" name="principal"/></td>
                         </tr>
                         <tr>
-                            <td>keytab:</td>
+                            <td>keytab (Optional):</td>
                             <td><input type="text" name="keytab"/></td>
                         </tr>
                         <tr>
-                            <td>pid:</td>
+                            <td>pid (Optional):</td>
                             <td><input type="text" name="pid"/></td>
                         </tr>
                         <tr>
-                            <td>daemon:</td>
+                            <td>daemon (Optional):</td>
                             <td><input type="checkbox" name="daemon"/></td>
                         </tr>
                         <tr>
-                            <td>stdout:</td>
+                            <td>stdout (Optional):</td>
                             <td><input type="text" name="stdout"/></td>
                         </tr>
                         <tr>
-                            <td>stderr:</td>
+                            <td>stderr (Optional):</td>
                             <td><input type="text" name="stderr"/></td>
                         </tr>
                         <tr>
-                            <td>log-file:</td>
+                            <td>log-file (Optional):</td>
                             <td><input type="text" name="log-file"/></td>
                         </tr>
                         <tr>
@@ -404,60 +416,64 @@
         <div>
             <h3>Workers</h3>
             <h5>Start a Celery worker node</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}?port={PORT-OPTIONAL}
+                &workers={WORKERS_COUNT-OPTIONAL}&workerclass={WORKER_CLASS-OPTIONAL}&worker_timeout={WORKER_TIMEOUT-OPTIONAL}
+                &hostname={HOSTNAME-OPTIONAL}&pid={PID-OPTIONAL}&daemon{DAEMON-OPTIONAL}&stdout={STDOUT_FILE-OPTIONAL}
+                &stderr={STDERR_FILE-OPTIONAL}&access_logfile={ACCESS_LOG_FILE-OPTIONAL}&error_logfile={ERROR_LOG_FILE-OPTIONAL}
+                &log-file={LOG_FILE-OPTIONAL}&debug{DEBUG-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}">
                     <table>
                         <tr>
-                            <td>port:</td>
+                            <td>port (Optional):</td>
                             <td><input type="text" name="port"/></td>
                         </tr>
                         <tr>
-                            <td>workers:</td>
+                            <td>workers (Optional):</td>
                             <td><input type="text" name="workers"/></td>
                         </tr>
                         <tr>
-                            <td>workerclass:</td>
+                            <td>workerclass (Optional):</td>
                             <td><input type="text" name="workerclass"/></td>
                         </tr>
                         <tr>
-                            <td>worker_timeout:</td>
+                            <td>worker_timeout (Optional):</td>
                             <td><input type="text" name="worker_timeout"/></td>
                         </tr>
                         <tr>
-                            <td>hostname:</td>
+                            <td>hostname (Optional):</td>
                             <td><input type="text" name="hostname"/></td>
                         </tr>
                         <tr>
-                            <td>pid:</td>
+                            <td>pid (Optional):</td>
                             <td><input type="text" name="pid"/></td>
                         </tr>
                         <tr>
-                            <td>daemon:</td>
+                            <td>daemon (Optional):</td>
                             <td><input type="checkbox" name="daemon"/></td>
                         </tr>
                         <tr>
-                            <td>stdout:</td>
+                            <td>stdout (Optional):</td>
                             <td><input type="text" name="stdout"/></td>
                         </tr>
                         <tr>
-                            <td>stderr:</td>
+                            <td>stderr (Optional):</td>
                             <td><input type="text" name="stderr"/></td>
                         </tr>
                         <tr>
-                            <td>access_logfile:</td>
+                            <td>access_logfile (Optional):</td>
                             <td><input type="text" name="access_logfile"/></td>
                         </tr>
                         <tr>
-                            <td>error_logfile:</td>
+                            <td>error_logfile (Optional):</td>
                             <td><input type="text" name="error_logfile"/></td>
                         </tr>
                         <tr>
-                            <td>log-file:</td>
+                            <td>log-file (Optional):</td>
                             <td><input type="text" name="log-file"/></td>
                         </tr>
                         <tr>
-                            <td>debug:</td>
+                            <td>debug (Optional):</td>
                             <td><input type="checkbox" name="debug"/></td>
                         </tr>
                         <tr>
@@ -471,48 +487,50 @@
         <div>
             <h3>Scheduler</h3>
             <h5>Start a scheduler instance</h5>
-            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}</h5>
+            <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}?dag_id={DAG_ID-OPTIONAL}
+                &subdir={SUB_DIRECTORY-OPTIONAL}&run-duration={RUN_DURATION-OPTIONAL}&num_runs={NUMBER_OF_RUNS-OPTIONAL}&daemon{DEMONIZE-OPTIONAL}
+                &stdout={STDOUT_FILE-OPTIONAL}&stderr={STDERR_FILE-OPTIONAL}&log-file={LOG_FILE-OPTIONAL}</h5>
             <div>
                 <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}">
                     <table>
                         <tr>
-                            <td>dag_id:</td>
+                            <td>dag_id (Optional):</td>
                             <td><input type="text" name="dag_id"/></td>
                         </tr>
                         <tr>
-                            <td>subdir:</td>
+                            <td>subdir (Optional):</td>
                             <td><input type="text" name="subdir"/></td>
                         </tr>
                         <tr>
-                            <td>run-duration:</td>
+                            <td>run-duration (Optional):</td>
                             <td><input type="text" name="run-duration"/></td>
                         </tr>
                         <tr>
-                            <td>num_runs:</td>
+                            <td>num_runs (Optional):</td>
                             <td><input type="text" name="num_runs"/></td>
                         </tr>
                         <tr>
-                            <td>do_pickle:</td>
+                            <td>do_pickle (Optional):</td>
                             <td><input type="checkbox" name="do_pickle"/></td>
                         </tr>
                         <tr>
-                            <td>pid:</td>
+                            <td>pid (Optional):</td>
                             <td><input type="text" name="pid"/></td>
                         </tr>
                         <tr>
-                            <td>daemon:</td>
+                            <td>daemon (Optional):</td>
                             <td><input type="checkbox" name="daemon"/></td>
                         </tr>
                         <tr>
-                            <td>stdout:</td>
+                            <td>stdout (Optional):</td>
                             <td><input type="text" name="stdout"/></td>
                         </tr>
                         <tr>
-                            <td>stderr:</td>
+                            <td>stderr (Optional):</td>
                             <td><input type="text" name="stderr"/></td>
                         </tr>
                         <tr>
-                            <td>log-file:</td>
+                            <td>log-file (Optional):</td>
                             <td><input type="text" name="log-file"/></td>
                         </tr>
                         <tr>
@@ -569,26 +587,26 @@
                 </form>
             </div>
         </div>
-        <div>
-            <h3>Deploy DAG</h3>
-            <h5>Deploy a new DAG</h5>
-            <h5>POST {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>
-            <h6>enctype=multipart/form-data</h6>
-            <h6>dag_file - POST Body Element - REQUIRED</h6>
-            <div>
-                <form method="POST" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}" enctype="multipart/form-data">
-                    <table>
-                        <tr>
-                            <td>dag_file:</td>
-                            <td><input type="file" name="dag_file"/></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><input type="submit" value="Deploy DAG"/></td>
-                        </tr>
-                    </table>
-                </form>
-            </div>
-        </div>
+        <!--<div>-->
+            <!--<h3>Deploy DAG</h3>-->
+            <!--<h5>Deploy a new DAG</h5>-->
+            <!--<h5>POST {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>-->
+            <!--<h6>enctype=multipart/form-data</h6>-->
+            <!--<h6>dag_file - POST Body Element - REQUIRED</h6>-->
+            <!--<div>-->
+                <!--<form method="POST" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}" enctype="multipart/form-data">-->
+                    <!--<table>-->
+                        <!--<tr>-->
+                            <!--<td>dag_file:</td>-->
+                            <!--<td><input type="file" name="dag_file"/></td>-->
+                        <!--</tr>-->
+                        <!--<tr>-->
+                            <!--<td></td>-->
+                            <!--<td><input type="submit" value="Deploy DAG"/></td>-->
+                        <!--</tr>-->
+                    <!--</table>-->
+                <!--</form>-->
+            <!--</div>-->
+        <!--</div>-->
     </body>
 </html>
