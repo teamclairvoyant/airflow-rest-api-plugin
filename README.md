@@ -24,18 +24,40 @@ http://airflow.incubator.apache.org/cli.html
 
 ### Using the REST API
 
-Once you deploy the plugin and restart the web server, you can start to use the REST API. Bellow you will see the endpoints that are supported. In addition, you can also interact with the REST API from the Airflow Web Server. When you reload the page, you will see a link under the Admin tab called "Airflow REST API". Clicking on this will take you to the following URL:
+Once you deploy the plugin and restart the web server, you can start to use the REST API. Bellow you will see the endpoints that are supported. In addition, you can also interact with the REST API from the Airflow Web Server. When you reload the page, you will see a link under the Admin tab called "REST API". Clicking on the link will navigate you to the following URL:
 
-http://{HOST}:{PORT}/admin/restapi/
+http://{AIRFLOW_HOST}:{AIRFLOW_PORT}/admin/rest_api/
 
 This web page will show the Endpoints supported and provide a form for you to test submitting to them.
  
+
+#### API Response
+
+TBC
+
 #### Endpoints
 
+TODO: ADD MORE
+
+###### Version
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/version
+
+Gets the version of Airflow currently running
+
+Query Arguments:
+
+None
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api/v1.0/version
 
 ###### Trigger DAG
 
-GET - http://{HOST}:{PORT}/admin/restapi/api/v1.0/trigger_dag
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag
+
+Triggers a Dag to Run
 
 Query Arguments:
     
@@ -47,7 +69,10 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/restapi/api/v1.0/trigger_dag?dag_id=test_id
+http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id
 
-http://{HOST}:{PORT}/admin/restapi/api/v1.0/trigger_dag?dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
+http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
+
+
+
 

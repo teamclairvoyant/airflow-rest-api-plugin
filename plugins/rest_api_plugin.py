@@ -1,6 +1,7 @@
 from airflow.models import DagBag
 from airflow.plugins_manager import AirflowPlugin
 from airflow import configuration
+from airflow.www.app import csrf
 
 from flask import Blueprint, request, jsonify
 from flask_admin import BaseView, expose
@@ -540,21 +541,22 @@ class REST_API(BaseView):
         logging.info(html)
         return self.get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
 
-    # # todo: exempt this from using csrf tokens
-    # @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
-    # def deploy_dag(self):
-    #     # check if the post request has the file part
-    #     if 'dag_file' not in request.files:
-    #         raise ValueError("dag_file should be provided")
-    #     dag_file = request.files['dag_file']
-    #     # if user does not select file, browser also
-    #     # submit a empty part without filename
-    #     if dag_file.filename == '':
-    #         raise ValueError("dag_file should be provided")
-    #     if dag_file and dag_file.filename.endswith(".py"):
-    #         dag_file.save(os.path.join(dags_folder, dag_file.filename))
-    #     else:
-    #         raise ValueError("dag_file is not a *.py file")
+    @csrf.exempt
+    @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
+    def deploy_dag(self):
+        base_response = self.get_base_response()
+        # check if the post request has the file part
+        if 'dag_file' not in request.files:
+            raise ValueError("dag_file should be provided")
+        dag_file = request.files['dag_file']
+        # if user does not select file, browser also submits an empty part without filename
+        if dag_file.filename == '':
+            raise ValueError("dag_file should be provided")
+        if dag_file and dag_file.filename.endswith(".py"):
+            dag_file.save(os.path.join(dags_folder, dag_file.filename))
+        else:
+            raise ValueError("dag_file is not a *.py file")
+        return self.get_final_response(base_response, "DAG File [{}] has been uploaded".format(dag_file))
 
     @staticmethod
     def collect_process_output(process):

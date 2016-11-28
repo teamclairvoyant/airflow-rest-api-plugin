@@ -614,28 +614,31 @@
         </form>
     </div>
 </div>
-<!--<div>-->
-    <!--<h3>Deploy DAG</h3>-->
-    <!--<h5>Deploy a new DAG</h5>-->
-    <!--<h5>POST {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>-->
-    <!--<h6>enctype=multipart/form-data</h6>-->
-    <!--<h6>dag_file - POST Body Element - REQUIRED</h6>-->
+<div>
+    <h3>Deploy DAG</h3>
+    <h5>Deploy a new DAG</h5>
+    <h5>POST {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>
+    <h6>enctype=multipart/form-data</h6>
+    <h6>dag_file - POST Body Element - REQUIRED</h6>
 
-    <!--<div>-->
-        <!--<form method="POST" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}"-->
-              <!--enctype="multipart/form-data">-->
-            <!--<table>-->
-                <!--<tr>-->
-                    <!--<td>dag_file:</td>-->
-                    <!--<td><input type="file" name="dag_file"/></td>-->
-                <!--</tr>-->
-                <!--<tr>-->
-                    <!--<td colspan="2"><input type="submit" value="Deploy DAG"/></td>-->
-                <!--</tr>-->
-            <!--</table>-->
-        <!--</form>-->
-    <!--</div>-->
-<!--</div>-->
+    <div>
+        <form method="POST" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}"
+              enctype="multipart/form-data">
+            <table>
+                <tr>
+                    <td>dag_file:</td>
+                    <td><input type="file" name="dag_file"/></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="Deploy DAG"/></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+
+<br/>
 
 {% endblock %}
 
