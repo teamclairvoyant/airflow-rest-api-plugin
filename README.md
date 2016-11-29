@@ -2,9 +2,11 @@
 
 ### Description
 
-A plugin for Apache Airflow (https://github.com/apache/incubator-airflow) that exposes rest end points for the Command Line Interfaces listed in the airflow documentation:
+A plugin for Apache Airflow (https://github.com/apache/incubator-airflow) that exposes REST endpoints for the Command Line Interfaces listed in the airflow documentation:
 
 http://airflow.incubator.apache.org/cli.html
+
+Also includes other useful REST APIs.
 
 ### Deployment Instructions
 
@@ -70,8 +72,6 @@ This web page will show the Endpoints supported and provide a form for you to te
 
 #### Endpoints
 
-TODO: ADD MORE
-
 ###### Version
 
 GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/version
@@ -86,6 +86,102 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api/v1.0/version
 
+###### Variables
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/variables
+
+Displays the version of Airflow you're using
+
+TODO: FILL OUT
+
+###### Pause
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/pause
+
+Pauses a DAG
+
+TODO: FILL OUT
+
+###### Unpause
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/unpause
+
+Resume a paused DAG
+
+TODO: FILL OUT
+
+###### Test
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/test
+
+Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.
+
+TODO: FILL OUT
+
+###### DAG State
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/dag_state
+
+Get the status of a dag run
+
+TODO: FILL OUT
+
+###### Run
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/run
+
+Run a single task instance
+
+TODO: FILL OUT
+
+###### List Tasks
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/list_tasks
+
+List the tasks within a DAG
+
+TODO: FILL OUT
+
+###### Backfill DAG
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/backfill
+
+Run subsections of a DAG for a specified date range
+
+TODO: FILL OUT
+
+###### List DAGs
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/list_dags
+
+List all the DAGs
+
+TODO: FILL OUT
+
+###### Kerberos
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/kerberos
+
+Start a kerberos ticket renewer
+
+TODO: FILL OUT
+
+###### Workers
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/workers
+
+Start a Celery worker node
+
+TODO: FILL OUT
+
+###### Scheduler
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/variables
+
+Start a scheduler instance
+
+TODO: FILL OUT
+
 ###### Trigger DAG
 
 GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag
@@ -98,7 +194,7 @@ Query Arguments:
      
 * run_id (Optional) - The RUN ID to use for the DAG run
 
-* conf - Some configuration to pass to the DAG you trigger
+* conf (Optional) - Some configuration to pass to the DAG you trigger - (URL Encoded JSON)
 
 Examples:
 
@@ -106,6 +202,21 @@ http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id
 
 http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
 
+###### Refresh DAG
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/refresh_dag
+
+Refresh a DAG
+
+TODO: FILL OUT
+
+###### Deploy DAG
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api/v1.0/deploy_dag
+
+Deploy a new DAG
+
+TODO: FILL OUT
 
 #### API Response
 
