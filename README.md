@@ -12,15 +12,52 @@ http://airflow.incubator.apache.org/cli.html
 
     * The location you should put it is usually at {AIRFLOW_HOME}/plugins. The specific location can be found in your airflow.cfg file:
     
-        ```
-              
-            plugins_folder = /home/{USER_NAME}/airflow/plugins
-              
-        ```
+        plugins_folder = /home/{USER_NAME}/airflow/plugins
     
 2. Copy the contents of the plugins folder from this repo into the plugins folder you created on the Airflow server.
 
+3. Setup Authentication for Security (Optional)
+
+    a. Follow the "Enabling Authentication" section bellow.
+
+4. Restart the Airflow Web Server
+
+### Enabling Authentication
+
+The REST API client supports a simple token based authentication mechanism where you can require users to pass in a specific http header to authenticate. By default this authentication mechanism is disabled but can be enabled with the "Setup" steps bellow. 
+
+#### Setup
+
+1. Edit your {AIRFLOW_HOME}/airflow.cfg file
+
+    a. Under the [webserver] section add the following content:
+    
+        # HTTP Token to be used for authenticating REST calls for the REST API Plugin
+        # Comment this out to disable Authentication
+        rest_api_plugin_expected_http_token = {HTTP_TOKEN_PLACEHOLDER}
+        
+2. Fill in the {HTTP_TOKEN_PLACEHOLDER} with your desired token people should pass 
+
 3. Restart the Airflow Web Server
+
+#### Authenticating
+
+Once the steps above have been followed to enable authentication, users will need to pass a specific header along with their request to properly call the REST API. The header name is: rest_api_plugin_http_token
+
+**Example CURL Command:**
+
+curl --header "rest_api_plugin_http_token: {HTTP_TOKEN_PLACEHOLDER}" http://{HOST}:{PORT}/admin/rest_api/api/v1.0/version
+
+#### What happens when you fail to Authenticate?
+
+In the event that you have authentication enabled and the user calling the REST Endpoint doesn't include the header, you will get the following response:
+
+{
+  "call_time": "{TIMESTAMP}",
+  "output": "Token Authentication Failed",
+  "response_time": "{TIMESTAMP}",
+  "status": "ERROR"
+}
 
 ### Using the REST API
 
@@ -30,10 +67,6 @@ http://{AIRFLOW_HOST}:{AIRFLOW_PORT}/admin/rest_api/
 
 This web page will show the Endpoints supported and provide a form for you to test submitting to them.
  
-
-#### API Response
-
-TBC
 
 #### Endpoints
 
@@ -74,5 +107,22 @@ http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id
 http://{HOST}:{PORT}/admin/rest_api/api/v1.0/trigger_dag?dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
 
 
+#### API Response
 
+The API's will all return a common response object. It is a JSON object with the following entries in it:
 
+arguments      - Dict       - Dictionary with the arguments you passed in and their values
+call_time      - Timestamp  - Time in which the request was received by the server 
+output         - String     - Text output from calling the CLI function
+response_time  - Timestamp  - Time in which the response was sent back by the server 
+status         - String     - Response Status of the call. (possible values: OK, ERROR)
+
+**Sample** (Result of calling the versions endpoint)
+
+{
+  "arguments": {},
+  "call_time": "Tue, 29 Nov 2016 14:22:26 GMT",
+  "output": "1.7.0",
+  "response_time": "Tue, 29 Nov 2016 14:27:59 GMT",
+  "status": "OK"
+}

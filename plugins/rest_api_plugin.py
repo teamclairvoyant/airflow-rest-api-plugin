@@ -42,24 +42,65 @@ url_dict = dict(
 
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 dags_folder = configuration.get('core', 'DAGS_FOLDER')
+rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
+expected_http_token = None
+if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
+    expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
+
+
+def get_base_response(status="OK", call_time=datetime.now(), include_arguments=True):
+    base_response = {"status": status, "call_time": call_time}
+    if include_arguments:
+        base_response["arguments"] = request.args
+    return base_response
+
+
+def get_final_response(base_response, output=None):
+    final_response = base_response
+    final_response["response_time"] = datetime.now()
+    if output:
+        final_response["output"] = output
+    return jsonify(final_response)
+
+
+def http_token_secure(func):
+    def secure_check(arg):
+        logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
+        if expected_http_token:
+            logging.info("Performing Token Authentication")
+            if request.headers.get(rest_api_plugin_http_token_header_name, None) != expected_http_token:
+                logging.info("Token Authentication Failed")
+                base_response = get_base_response(status="ERROR", include_arguments=False)
+                return get_final_response(base_response=base_response, output="Token Authentication Failed"), 403
+        return func(arg)
+    return secure_check
 
 
 class REST_API(BaseView):
 
     @expose('/')
     def index(self):
+        logging.info("REST_API.index() called")
         dagbag = DagBag()
-        return self.render("rest_api_plugin/index.html", dags=dagbag.dags, airflow_webserver_base_url=airflow_webserver_base_url, url_dict=url_dict)
+        return self.render("rest_api_plugin/index.html",
+                           dags=dagbag.dags,
+                           airflow_webserver_base_url=airflow_webserver_base_url,
+                           url_dict=url_dict
+                           )
 
     @expose(url_dict.get("VERSION_URL"))
+    @http_token_secure
     def version(self):
-        base_response = self.get_base_response()
-        return self.get_final_response(base_response, airflow.__version__)
+        logging.info("REST_API.version() called")
+        base_response = get_base_response()
+        return get_final_response(base_response, airflow.__version__)
 
     # todo: test
     @expose(url_dict.get("VARIABLES_URL"))
+    @http_token_secure
     def variables(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.variables() called")
+        base_response = get_base_response()
         set = request.args.get('set')
         get = request.args.get('get')
         default = request.args.get('default')
@@ -90,11 +131,13 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     @expose(url_dict.get("PAUSE_URL"))
+    @http_token_secure
     def pause(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.pause() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
@@ -113,11 +156,13 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     @expose(url_dict.get("UNPAUSE_URL"))
+    @http_token_secure
     def unpause(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.unpause() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
@@ -136,12 +181,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("TEST_URL"))
+    @http_token_secure
     def test(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.test() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
         execution_date = request.args.get('execution_date')
@@ -173,12 +220,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("DAG_STATE_URL"))
+    @http_token_secure
     def dag_state(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.dag_state() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         execution_date = request.args.get('execution_date')
         subdir = request.args.get('subdir')
@@ -201,12 +250,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("RUN_URL"))
+    @http_token_secure
     def run(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.run() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
         execution_date = request.args.get('execution_date')
@@ -249,11 +300,13 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     @expose(url_dict.get("LIST_TASKS_URL"))
+    @http_token_secure
     def list_tasks(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.list_tasks() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
@@ -273,12 +326,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
-    # todo: finished this
+    # todo: test
     @expose(url_dict.get("BACKFILL_URL"))
-    def trigger_dag(self):
-        base_response = self.get_base_response()
+    @http_token_secure
+    def backfill(self):
+        logging.info("REST_API.backfill() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         task_regex = request.args.get('task_regex')
         start_date = request.args.get('start_date')
@@ -323,12 +378,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("LIST_DAGS_URL"))
+    @http_token_secure
     def list_dags(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.list_dags() called")
+        base_response = get_base_response()
         subdir = request.args.get('subdir')
 
         command_split = ["airflow", "list_dags"]
@@ -344,12 +401,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("KERBEROS_URL"))
+    @http_token_secure
     def kerberos(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.kerberos() called")
+        base_response = get_base_response()
         principal = request.args.get('principal')
         keytab = request.args.get('keytab')
         pid = request.args.get('pid')
@@ -382,12 +441,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("WORKER_URL"))
+    @http_token_secure
     def worker(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.worker() called")
+        base_response = get_base_response()
         queues = request.args.get('queues')
         concurrency = request.args.get('concurrency')
         pid = request.args.get('pid')
@@ -420,12 +481,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("SCHEDULER_URL"))
+    @http_token_secure
     def scheduler(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.scheduler() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
         run_duration = request.args.get('run-duration')
@@ -464,12 +527,14 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("TASK_STATE_URL"))
+    @http_token_secure
     def task_state(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.task_state() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
         execution_date = request.args.get('execution_date')
@@ -496,13 +561,15 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     @expose(url_dict.get("TRIGGER_DAG_URL"))
+    @http_token_secure
     def trigger_dag(self):
+        logging.info("REST_API.trigger_dag() called")
         call_time = datetime.now()
         execution_date = call_time.isoformat()
-        base_response = self.get_base_response(call_time)
+        base_response = get_base_response(call_time=call_time)
         dag_id = request.args.get('dag_id')
         run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
         conf = request.args.get('conf')
@@ -525,12 +592,14 @@ class REST_API(BaseView):
         output = self.collect_process_output(process)
         base_response["run_id"] = run_id
 
-        return self.get_final_response(base_response, output)
+        return get_final_response(base_response, output)
 
     # todo: test
     @expose(url_dict.get("REFRESH_DAG_URL"))
+    @http_token_secure
     def refresh_dag(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.refresh_dag() called")
+        base_response = get_base_response()
         dag_id = request.args.get('dag_id')
 
         if dag_id is None:
@@ -538,13 +607,14 @@ class REST_API(BaseView):
 
         response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
         html = response.read()
-        logging.info(html)
-        return self.get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
+        return get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
 
     @csrf.exempt
     @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
+    @http_token_secure
     def deploy_dag(self):
-        base_response = self.get_base_response()
+        logging.info("REST_API.deploy_dag() called")
+        base_response = get_base_response()
         # check if the post request has the file part
         if 'dag_file' not in request.files:
             raise ValueError("dag_file should be provided")
@@ -556,7 +626,7 @@ class REST_API(BaseView):
             dag_file.save(os.path.join(dags_folder, dag_file.filename))
         else:
             raise ValueError("dag_file is not a *.py file")
-        return self.get_final_response(base_response, "DAG File [{}] has been uploaded".format(dag_file))
+        return get_final_response(base_response, "DAG File [{}] has been uploaded".format(dag_file))
 
     @staticmethod
     def collect_process_output(process):
@@ -576,19 +646,8 @@ class REST_API(BaseView):
         logging.info("RestAPI Output: " + str(output))
         return output
 
-    @staticmethod
-    def get_base_response(call_time=datetime.now()):
-        return {"status": "OK", "arguments": request.args, "call_time": call_time}
 
-    @staticmethod
-    def get_final_response(base_response, output):
-        final_response = base_response
-        final_response["response_time"] = datetime.now()
-        final_response["output"] = output
-        return jsonify(final_response)
-
-
-rest_api_view = REST_API(category="Admin", name="REST API")
+rest_api_view = REST_API(category="Admin", name="REST API Plugin")
 
 rest_api_bp = Blueprint(
     "rest_api_bp",
