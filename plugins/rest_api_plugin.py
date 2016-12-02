@@ -55,11 +55,13 @@ def get_base_response(status="OK", call_time=datetime.now(), include_arguments=T
     return base_response
 
 
-def get_final_response(base_response, output=None):
+def get_final_response(base_response, output=None, airflow_cmd=None):
     final_response = base_response
     final_response["response_time"] = datetime.now()
     if output:
         final_response["output"] = output
+    if airflow_cmd:
+        final_response["airflow_cmd"] = airflow_cmd
     return jsonify(final_response)
 
 
@@ -131,7 +133,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     @expose(url_dict.get("PAUSE_URL"))
     @http_token_secure
@@ -156,7 +158,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     @expose(url_dict.get("UNPAUSE_URL"))
     @http_token_secure
@@ -181,7 +183,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("TEST_URL"))
@@ -220,7 +222,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("DAG_STATE_URL"))
@@ -250,7 +252,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("RUN_URL"))
@@ -300,7 +302,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     @expose(url_dict.get("LIST_TASKS_URL"))
     @http_token_secure
@@ -326,7 +328,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("BACKFILL_URL"))
@@ -378,7 +380,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("LIST_DAGS_URL"))
@@ -401,7 +403,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("KERBEROS_URL"))
@@ -441,7 +443,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("WORKER_URL"))
@@ -481,7 +483,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("SCHEDULER_URL"))
@@ -527,7 +529,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("TASK_STATE_URL"))
@@ -561,7 +563,7 @@ class REST_API(BaseView):
 
         output = self.collect_process_output(process)
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     @expose(url_dict.get("TRIGGER_DAG_URL"))
     @http_token_secure
@@ -592,7 +594,7 @@ class REST_API(BaseView):
         output = self.collect_process_output(process)
         base_response["run_id"] = run_id
 
-        return get_final_response(base_response, output)
+        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
     # todo: test
     @expose(url_dict.get("REFRESH_DAG_URL"))
@@ -607,7 +609,7 @@ class REST_API(BaseView):
 
         response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
         html = response.read()
-        return get_final_response(base_response, "DAG [{}] is now fresh as a daisy".format(dag_id))
+        return get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     @csrf.exempt
     @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
@@ -626,7 +628,7 @@ class REST_API(BaseView):
             dag_file.save(os.path.join(dags_folder, dag_file.filename))
         else:
             raise ValueError("dag_file is not a *.py file")
-        return get_final_response(base_response, "DAG File [{}] has been uploaded".format(dag_file))
+        return get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     @staticmethod
     def collect_process_output(process):

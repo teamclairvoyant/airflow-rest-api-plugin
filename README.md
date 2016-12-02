@@ -222,6 +222,7 @@ TODO: FILL OUT
 
 The API's will all return a common response object. It is a JSON object with the following entries in it:
 
+airflow_cmd    - String     - Airflow command being ran on the commandline
 arguments      - Dict       - Dictionary with the arguments you passed in and their values
 call_time      - Timestamp  - Time in which the request was received by the server 
 output         - String     - Text output from calling the CLI function
@@ -231,6 +232,7 @@ status         - String     - Response Status of the call. (possible values: OK,
 **Sample** (Result of calling the versions endpoint)
 
 {
+  "airflow_cmd": "airflow version",
   "arguments": {},
   "call_time": "Tue, 29 Nov 2016 14:22:26 GMT",
   "output": "1.7.0",
