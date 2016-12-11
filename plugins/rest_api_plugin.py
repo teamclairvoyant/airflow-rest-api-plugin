@@ -65,21 +65,37 @@ def get_final_response(base_response, output=None, airflow_cmd=None):
     return jsonify(final_response)
 
 
+def get_error_response(base_response, error_code, output=None):
+    base_response["status"] = "ERROR"
+    return get_final_response(base_response=base_response, output=output), error_code
+
+
+def get_403_error_response(base_response, output=None):
+    return get_error_response(base_response, 403, output)
+
+
+def get_400_error_response(base_response, output=None):
+    return get_error_response(base_response, 400, output)
+
+
+def is_arg_not_provided(arg):
+    return arg is None or arg == ""
+
 def http_token_secure(func):
     def secure_check(arg):
         logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
         if expected_http_token:
             logging.info("Performing Token Authentication")
             if request.headers.get(rest_api_plugin_http_token_header_name, None) != expected_http_token:
-                logging.info("Token Authentication Failed")
-                base_response = get_base_response(status="ERROR", include_arguments=False)
-                return get_final_response(base_response=base_response, output="Token Authentication Failed"), 403
+                logging.warn("Token Authentication Failed")
+                base_response = get_base_response(include_arguments=False)
+                return get_403_error_response(base_response=base_response, output="Token Authentication Failed")
         return func(arg)
+
     return secure_check
 
 
 class REST_API(BaseView):
-
     @expose('/')
     def index(self):
         logging.info("REST_API.index() called")
@@ -143,8 +159,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
 
         command_split = ["airflow", "pause"]
         if subdir:
@@ -168,8 +184,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
 
         command_split = ["airflow", "unpause"]
         if subdir:
@@ -197,12 +213,12 @@ class REST_API(BaseView):
         subdir = request.args.get('subdir')
         task_params = request.args.get('task_params')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
-        if task_id is None:
-            raise ValueError("task_id should be provided")
-        if execution_date is None:
-            raise ValueError("execution_date should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
+        if is_arg_not_provided(task_id):
+            return get_400_error_response(base_response, "task_id should be provided")
+        if is_arg_not_provided(execution_date):
+            return get_400_error_response(base_response, "execution_date should be provided")
 
         command_split = ["airflow", "test"]
         if subdir:
@@ -234,10 +250,10 @@ class REST_API(BaseView):
         execution_date = request.args.get('execution_date')
         subdir = request.args.get('subdir')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
-        if execution_date is None:
-            raise ValueError("execution_date should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
+        if is_arg_not_provided(execution_date):
+            return get_400_error_response(base_response, "execution_date should be provided")
 
         command_split = ["airflow", "dag_state"]
         if subdir:
@@ -267,12 +283,12 @@ class REST_API(BaseView):
         pool = request.args.get('pool')
         pickle = request.args.get('pickle')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
-        if task_id is None:
-            raise ValueError("task_id should be provided")
-        if execution_date is None:
-            raise ValueError("execution_date should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
+        if is_arg_not_provided(task_id):
+            return get_400_error_response(base_response, "task_id should be provided")
+        if is_arg_not_provided(execution_date):
+            return get_400_error_response(base_response, "execution_date should be provided")
 
         command_split = ["airflow", "run"]
         if subdir is not None:
@@ -312,8 +328,8 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         subdir = request.args.get('subdir')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
 
         command_split = ["airflow", "list_tasks"]
         if subdir:
@@ -343,8 +359,8 @@ class REST_API(BaseView):
         subdir = request.args.get('subdir')
         pool = request.args.get('pool')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
 
         command_split = ["airflow", "backfill"]
         if task_regex is not None:
@@ -418,8 +434,8 @@ class REST_API(BaseView):
         stderr = request.args.get('stderr')
         log_file = request.args.get('log-file')
 
-        if principal is None:
-            raise ValueError("principal should be provided")
+        if is_arg_not_provided(principal):
+            return get_400_error_response(base_response, "principal should be provided")
 
         command_split = ["airflow", "kerberos"]
         if keytab:
@@ -434,7 +450,6 @@ class REST_API(BaseView):
             command_split.extend(["--stderr", stderr])
         if log_file:
             command_split.extend(["--log-file", log_file])
-
 
         logging.info("command_split array: " + str(command_split))
         process = subprocess.Popen(
@@ -542,12 +557,12 @@ class REST_API(BaseView):
         execution_date = request.args.get('execution_date')
         subdir = request.args.get('subdir')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
-        if task_id is None:
-            raise ValueError("task_id should be provided")
-        if execution_date is None:
-            raise ValueError("execution_date should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
+        if is_arg_not_provided(task_id):
+            return get_400_error_response(base_response, "task_id should be provided")
+        if is_arg_not_provided(execution_date):
+            return get_400_error_response(base_response, "execution_date should be provided")
 
         command_split = ["airflow", "task_state"]
         if subdir:
@@ -576,13 +591,13 @@ class REST_API(BaseView):
         run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
         conf = request.args.get('conf')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
 
         command_split = ["airflow", "trigger_dag"]
         if run_id is not None:
             command_split.extend(["--run_id", run_id])
-        if conf is not None:
+        if conf is not None and conf != "":
             command_split.extend(["--conf", conf])
         command_split.append(dag_id)
 
@@ -604,8 +619,10 @@ class REST_API(BaseView):
         base_response = get_base_response()
         dag_id = request.args.get('dag_id')
 
-        if dag_id is None:
-            raise ValueError("dag_id should be provided")
+        if is_arg_not_provided(dag_id):
+            return get_400_error_response(base_response, "dag_id should be provided")
+        elif " " in dag_id:
+            return get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
 
         response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
         html = response.read()
@@ -619,15 +636,15 @@ class REST_API(BaseView):
         base_response = get_base_response()
         # check if the post request has the file part
         if 'dag_file' not in request.files:
-            raise ValueError("dag_file should be provided")
+            return get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
         # if user does not select file, browser also submits an empty part without filename
         if dag_file.filename == '':
-            raise ValueError("dag_file should be provided")
+            return get_400_error_response(base_response, "dag_file should be provided")
         if dag_file and dag_file.filename.endswith(".py"):
             dag_file.save(os.path.join(dags_folder, dag_file.filename))
         else:
-            raise ValueError("dag_file is not a *.py file")
+            return get_400_error_response(base_response, "dag_file is not a *.py file")
         return get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     @staticmethod
