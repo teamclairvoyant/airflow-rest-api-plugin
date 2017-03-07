@@ -1,4 +1,4 @@
-from airflow.models import DagBag
+from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
 from airflow import configuration
 from airflow.www.app import csrf
@@ -18,6 +18,8 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 """
 
 # todo: display the output of the commands nicer
+# todo: test functions
+# todo: make this more dynamic and easier to add more functions
 
 url_dict = dict(
     REST_API_BASE_URL="/admin/rest_api",
@@ -81,6 +83,7 @@ def get_400_error_response(base_response, output=None):
 def is_arg_not_provided(arg):
     return arg is None or arg == ""
 
+
 def http_token_secure(func):
     def secure_check(arg):
         logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
@@ -96,12 +99,18 @@ def http_token_secure(func):
 
 
 class REST_API(BaseView):
+
     @expose('/')
     def index(self):
         logging.info("REST_API.index() called")
         dagbag = DagBag()
+        dags = []
+        for dag_id in dagbag.dags:
+            orm_dag = DagModel.get_current(dag_id)
+            dags.append({"dag_id": dag_id, "is_active": not orm_dag.is_paused})
+
         return self.render("rest_api_plugin/index.html",
-                           dags=dagbag.dags,
+                           dags=dags,
                            airflow_webserver_base_url=airflow_webserver_base_url,
                            url_dict=url_dict
                            )
@@ -625,7 +634,7 @@ class REST_API(BaseView):
             return get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
 
         response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
-        html = response.read()
+        html = response.read()  # avoid using this as the output because this will include a large HTML string
         return get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     @csrf.exempt

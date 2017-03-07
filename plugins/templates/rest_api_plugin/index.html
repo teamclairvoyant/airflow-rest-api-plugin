@@ -9,22 +9,35 @@
 
 {% block body %}
 
+<style type="text/css">
+    #dags-table table { border-collapse: collapse; }
+    #dags-table td + td, #dags-table th + th { border-left: 1px solid; }
+    #dags-table tr + tr { border-top: 1px solid; }
+    #dags-table th, #dags-table td { padding: 4px; }
+</style>
+
 <!--todo: Add a new column to the tables to document what the variables are for and if they're required-->
+<!--todo: add what version of airflow each command is available in-->
 <!--todo: Add state for dags listed-->
 
 <h1>Airflow REST API </h1>
-<h2>Available DAGs:</h2>
-<ul>
+<h2>DAGs:</h2>
+<table id="dags-table">
+    <tr>
+        <th>DAG ID</th><th>Is Active</th>
+    </tr>
     {% for dag in dags %}
-    <li>{{dag}}</li>
+    <tr>
+        <td>{{dag.dag_id}}</td><td>{{dag.is_active}}</td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
 <h2>APIs</h2>
 <div>
     <h3>Version</h3>
     <h5>Displays the version of Airflow you're using</h5>
     <h5>GET {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VERSION_URL')}}">
             <table>
@@ -40,8 +53,8 @@
     <h5>List all variables</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}?set={SET-OPTIONAL}
-        &get={GET-OPTIONAL}&json{OPTIONAL}&default={DEFAULT-OPTIONAL}&import={IMPORT-OPTIONAL}&export={EXPORT-OPTIONAL}&delete={DELETE-OPTIONAL}</h5>
-
+        &get={GET-OPTIONAL}&json={OPTIONAL}&default={DEFAULT-OPTIONAL}&import={IMPORT-OPTIONAL}&export={EXPORT-OPTIONAL}&delete={DELETE-OPTIONAL}</h5>
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('VARIABLES_URL')}}">
             <table>
@@ -85,7 +98,7 @@
     <h5>Pauses a DAG</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.1.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('PAUSE_URL')}}">
             <table>
@@ -109,7 +122,7 @@
     <h5>Resume a paused DAG</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}?dag_id={DAG_ID-REQUIRED}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('UNPAUSE_URL')}}">
             <table>
@@ -136,7 +149,7 @@
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}?dag_id={DAG_ID-REQUIRED}
         &task_id={TASK_ID-OPTIONAL}&execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&dry_run{DRY_RUN-OPTIONAL}
         &task_params={TASK_PARAMS-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TEST_URL')}}">
             <table>
@@ -177,7 +190,7 @@
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}?dag_id={DAG_ID-REQUIRED}
         &execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.1.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DAG_STATE_URL')}}">
             <table>
@@ -208,7 +221,7 @@
         &task_id={TASK_ID-OPTIONAL}&execution_date={EXECUTION_DATE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&mark_success{MARK_SUCCESS-OPTIONAL}
         &force{FORCE-OPTIONAL}&pool={PEOPLE-OPTIONAL}&local{LOCAL-OPTIONAL}&ignore_dependencies{IGNORE_DEPENDENCIES-OPTIONAL}
         &ignore_depends_on_past{IGNORE_DEPENDS_ON_PAST-OPTIONAL}&ship_dag{SHIP_DAG-OPTIONAL}&pickle={PICKLE-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('RUN_URL')}}">
             <table>
@@ -272,7 +285,7 @@
     <h5>List the tasks within a DAG</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}?dag_id={DAG_ID-REQUIRED}&tree{TREE-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_TASKS_URL')}}">
             <table>
@@ -303,7 +316,7 @@
         &task_regex={TASK_REGEX-OPTIONAL}&start_date={START_DATE-OPTIONAL}&end_date={END_DATE-OPTIONAL}&mark_success{MARK_SUCCESS-OPTIONAL}
         &local{LOCAL-OPTIONAL}&donot_pickle{DO_NOT_PICKLE-OPTIONAL}&include_adhoc{INCLUDE_ADHOC-OPTIONAL}&ignore_dependencies{IGNORE_DEPENDENCIES-OPTIONAL}
         &ignore_first_depends_on_past{IGNORE_FIRST_DEPENDS_ON_PAST-OPTIONAL}&subdir={SUB_DIRECTORY-OPTIONAL}&pool={POOL-OPTIONAL}&dry_run{DRY_RUN-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('BACKFILL_URL')}}">
             <table>
@@ -372,7 +385,7 @@
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}?subdir={SUB_DIRECTORY-REQUIRED}
         &report={REPORT-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('LIST_DAGS_URL')}}">
             <table>
@@ -397,7 +410,7 @@
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}?principal={PRINCIPAL-REQUIRED}
         &keytab={KEYTAB-OPTIONAL}&pid={PID_FILE-OPTIONAL}&daemon{DAEMON-OPTIONAL}&stdout={STDOUT_FILE-OPTIONAL}&stderr={STDERR_FILE-OPTIONAL}&log-file={LOG_FILE-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('KERBEROS_URL')}}">
             <table>
@@ -437,17 +450,17 @@
     </div>
 </div>
 <div>
-    <h3>Workers</h3>
-    <h5>Start a Celery worker node</h5>
+    <h3>Worker</h3>
+    <h5>Start a Celery Worker Daemon</h5>
     <h5>GET
-        {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}?port={PORT-OPTIONAL}
+        {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKER_URL')}}?port={PORT-OPTIONAL}
         &workers={WORKERS_COUNT-OPTIONAL}&workerclass={WORKER_CLASS-OPTIONAL}&worker_timeout={WORKER_TIMEOUT-OPTIONAL}
         &hostname={HOSTNAME-OPTIONAL}&pid={PID-OPTIONAL}&daemon{DAEMON-OPTIONAL}&stdout={STDOUT_FILE-OPTIONAL}
         &stderr={STDERR_FILE-OPTIONAL}&access_logfile={ACCESS_LOG_FILE-OPTIONAL}&error_logfile={ERROR_LOG_FILE-OPTIONAL}
         &log-file={LOG_FILE-OPTIONAL}&debug{DEBUG-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
-        <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKERS_URL')}}">
+        <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('WORKER_URL')}}">
             <table>
                 <tr>
                     <td>port (Optional):</td>
@@ -502,7 +515,7 @@
                     <td><input type="checkbox" name="debug"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><input type="submit" value="Start Workers"/></td>
+                    <td colspan="2"><input type="submit" value="Start Worker"/></td>
                 </tr>
             </table>
         </form>
@@ -515,7 +528,7 @@
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}?dag_id={DAG_ID-OPTIONAL}
         &subdir={SUB_DIRECTORY-OPTIONAL}&run-duration={RUN_DURATION-OPTIONAL}&num_runs={NUMBER_OF_RUNS-OPTIONAL}&daemon{DEMONIZE-OPTIONAL}
         &stdout={STDOUT_FILE-OPTIONAL}&stderr={STDERR_FILE-OPTIONAL}&log-file={LOG_FILE-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('SCHEDULER_URL')}}">
             <table>
@@ -571,7 +584,7 @@
     <h5>Trigger a DAG run</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}?dag_id={DAG_ID-REQUIRED}&run_id={RUN_ID-OPTIONAL}&conf={CONF_JSON-OPTIONAL}</h5>
-
+    <h6>Available in Airflow Version: <b>1.7.0 or greater</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('TRIGGER_DAG_URL')}}">
             <table>
@@ -599,7 +612,7 @@
     <h5>Refresh a DAG</h5>
     <h5>GET
         {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('REFRESH_DAG_URL')}}?dag_id={DAG_ID-REQUIRED}</h5>
-
+    <h6>Available in Airflow Version: <b>None - Custom API</b></h6>
     <div>
         <form method="GET" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('REFRESH_DAG_URL')}}">
             <table>
@@ -620,7 +633,7 @@
     <h5>POST {{airflow_webserver_base_url}}{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}</h5>
     <h6>enctype=multipart/form-data</h6>
     <h6>dag_file - POST Body Element - REQUIRED</h6>
-
+    <h6>Available in Airflow Version: <b>None - Custom API</b></h6>
     <div>
         <form method="POST" action="{{url_dict.get('REST_API_BASE_URL')}}{{url_dict.get('DEPLOY_DAG_URL')}}"
               enctype="multipart/form-data">
