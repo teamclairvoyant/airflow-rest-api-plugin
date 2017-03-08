@@ -16,16 +16,23 @@
     th, td { padding: 4px; }
 </style>
 
-<!--todo: Add a new column to the tables to document what the variables are for and if they're required-->
-<!--todo: add what version of airflow each command is available in-->
-
+<script type="application/javascript">
+    function removeEmptyFields(form) {
+        for(var i = 0; i < form.length; i++) {
+            if(form[i].value == "") {
+                form[i].disabled = true;
+            }
+        }
+        return true;
+    }
+</script>
 
 <h1>Airflow REST API </h1>
 
 <h2>Documentation</h2>
 <ul>
-    <li><a href="https://airflow.incubator.apache.org/cli.html">Official Airflow CLI Documentation</a></li>
-    <li><a href="https://github.com/teamclairvoyant/airflow-rest-api-plugin">REST API Plugin Documentation</a></li>
+    <li><a target="_blank" href="https://airflow.incubator.apache.org/cli.html">Official Airflow CLI Documentation</a></li>
+    <li><a target="_blank" href="https://github.com/teamclairvoyant/airflow-rest-api-plugin">REST API Plugin Documentation</a></li>
 </ul>
 
 
@@ -46,7 +53,7 @@
 <div>
     <h3>{{api_object.name}}</h3>
     <h5>{{api_object.description}}</h5>
-    <h5>{{api_object.http_method}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for parameter in api_object.parameters %}&{{parameter.name}}{% if parameter.form_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
+    <h5>{{api_object.http_method}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for argument in api_object.arguments %}&{{argument.name}}{% if argument.form_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
 
     {% if api_object.form_enctype %}
     <h5>enctype=api_object.form_enctype</h5>
@@ -56,13 +63,15 @@
     <h6>{api_object.post_body_description}</h6>
     {% endif %}
 
-    <h6>Available in Airflow Version: <b>{{api_object.airflow_version}} or greater</b></h6>
+    <h6>Available in Airflow Version: <b>{{api_object.airflow_version}}</b></h6>
     <div>
         <form method="{{api_object.http_method}}"
               target="_blank"
               action="{{airflow_webserver_base_url}}{{rest_api_endpoint}}"
-              {{ 'enctype="' + api_object.form_enctype + '"' if api_object.form_enctype }}
+              enctype="{{ api_object.form_enctype if api_object.form_enctype else 'application/x-www-form-urlencoded' }}"
+              onsubmit="return removeEmptyFields(this)"
         >
+
             <table>
                 <input type="hidden" name="api" value="{{api_object.name}}" />
 
@@ -73,14 +82,24 @@
                     <th>Description</th>
                 </tr>
 
-                {% for parameter in api_object.parameters %}
+                {% for argument in api_object.arguments %}
                 <tr>
-                    <td>{{parameter.name}}:</td>
-                    <td><input type="{{parameter.form_type}}" name="{{parameter.name}}"/></td>
-                    <td>{{parameter.required}}</td>
-                    <td>{{parameter.description}}</td>
+                    <td>{{argument.name}}:</td>
+                    <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                    <td>{{argument.required}}</td>
+                    <td>{{argument.description}}</td>
                 </tr>
                 {% endfor %}
+
+                {% for argument in api_object.post_arguments %}
+                <tr>
+                    <td>{{argument.name}}:</td>
+                    <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                    <td>{{argument.required}}</td>
+                    <td>{{argument.description}}</td>
+                </tr>
+                {% endfor %}
+
                 <tr>
                     <td colspan="2"><input type="submit" value="Execute"/></td>
                 </tr>
