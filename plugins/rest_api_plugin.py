@@ -17,19 +17,18 @@ import os
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: display the output of the commands nicer
+# todo: display the output of the commands nicer - filter out loading DAGs (have optional?)
 # todo: test functions
-# todo: double check the versions the apis are supported in
 
 apis = [
     {
         "name": "version",
         "description": "Displays the version of Airflow you're using",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": []
     },
-    {
+    {  # todo: test
         "name": "render",
         "description": "Render a task instance's template(s)",
         "airflow_version": "1.7.0 or greater",
@@ -41,10 +40,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "variables",
         "description": "CRUD operations on variables",
-        "airflow_version": "1.7.1.0",
+        "airflow_version": "1.7.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "set", "description": "Set a variable", "form_type": "text", "required": False},
@@ -56,10 +55,10 @@ apis = [
             {"name": "delete", "description": "Delete a variable", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "connections",
         "description": "List/Add/Delete connections",
-        "airflow_version": "1.7.1.0",
+        "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "list", "description": "List all connections", "form_type": "checkbox", "required": False},
@@ -70,7 +69,7 @@ apis = [
             {"name": "conn_extra", "description": "Connection 'Extra' field, optional when adding a connection", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "pause",
         "description": "Pauses a DAG",
         "airflow_version": "1.7.0 or greater",
@@ -80,7 +79,7 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "unpause",
         "description": "Unpauses a DAG",
         "airflow_version": "1.7.0 or greater",
@@ -90,10 +89,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "task_failed_deps",
         "description": "Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -102,10 +101,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "trigger_dag",
         "description": "Trigger a DAG run",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.6.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -115,10 +114,10 @@ apis = [
             {"name": "exec_date", "description": "The execution date of the DAG", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "test",
         "description": "Test a task instance. This will run a task without checking for dependencies or recording it's state in the database.",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -129,10 +128,10 @@ apis = [
             {"name": "task_params", "description": "Sends a JSON params dict to the task", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "dag_state",
         "description": "Get the status of a dag run",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -140,10 +139,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "run",
         "description": "Run a single task instance",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -162,10 +161,10 @@ apis = [
             {"name": "pickle", "description": "Serialized pickle object of the entire dag (used internally)", "form_type": "text", "required": False},
         ]
     },
-    {
+    {  # todo: test
         "name": "list_tasks",
         "description": "List the tasks within a DAG",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -173,10 +172,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "backfill",
         "description": "Run subsections of a DAG for a specified date range",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -195,10 +194,10 @@ apis = [
             {"name": "dry_run", "description": "Perform a dry run", "form_type": "checkbox", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "list_dags",
         "description": "List all the DAGs",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -206,10 +205,10 @@ apis = [
             {"name": "report", "description": "Show DagBag loading report", "form_type": "checkbox", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "kerberos",
         "description": "Start a kerberos ticket renewer",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.6.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "principal", "description": "kerberos principal", "form_type": "text", "required": True},
@@ -219,12 +218,12 @@ apis = [
             {"name": "stdout", "description": "Redirect stdout to this file", "form_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_type": "text", "required": False},
             {"name": "log-file", "description": "Location of the log file", "form_type": "text", "required": False},
-        ]
+            ]
     },
-    {
+    {  # todo: test
         "name": "worker",
         "description": "Start a Celery worker node",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "do_pickle", "description": "Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.", "form_type": "checkbox", "required": False},
@@ -237,10 +236,10 @@ apis = [
             {"name": "log-file", "description": "Location of the log file", "form_type": "text", "required": False},
         ]
     },
-    {
+    {  # todo: test
         "name": "flower",
         "description": "Start a Celery worker node",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "hostname", "description": "Set the hostname on which to run the server", "form_type": "text", "required": False},
@@ -254,10 +253,10 @@ apis = [
             {"name": "log-file", "description": "Location of the log file", "form_type": "text", "required": False},
         ]
     },
-    {
+    {  # todo: test
         "name": "scheduler",
         "description": "Start a scheduler instance",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": False},
@@ -270,12 +269,12 @@ apis = [
             {"name": "stdout", "description": "Redirect stdout to this file", "form_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_type": "text", "required": False},
             {"name": "log-file", "description": "Location of the log file", "form_type": "text", "required": False},
-        ]
+            ]
     },
-    {
+    {  # todo: test
         "name": "task_state",
         "description": "Get the status of a task instance",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -284,10 +283,10 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_type": "checkbox", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "pool",
         "description": "CRUD operations on pools",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "set", "description": "Set pool slot count and description, respectively", "form_type": "checkbox", "required": False},
@@ -295,17 +294,17 @@ apis = [
             {"name": "delete", "description": "Delete a pool", "form_type": "text", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "serve_logs",
         "description": "Serve logs generate by worker",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": []
     },
-    {
+    {  # todo: test
         "name": "clear",
         "description": "Clear a set of task instance, as if they never ran",
-        "airflow_version": "1.7.0 or greater",
+        "airflow_version": "0.1 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_type": "text", "required": True, "cli_end_position": 1},
@@ -321,7 +320,7 @@ apis = [
             {"name": "exclude_subdags", "description": "Exclude subdags", "form_type": "checkbox", "required": False}
         ]
     },
-    {
+    {  # todo: test
         "name": "deploy_dag",
         "description": "Deploy a new DAG File to the DAGs directory",
         "airflow_version": "None - Custom API",
@@ -333,7 +332,7 @@ apis = [
             {"name": "dag_file", "description": "Python file to upload and deploy", "form_type": "file", "required": True}
         ]
     },
-    {
+    {  # todo: test
         "name": "refresh_dag",
         "description": "Refresh a DAG in the Web Server",
         "airflow_version": "None - Custom API",
