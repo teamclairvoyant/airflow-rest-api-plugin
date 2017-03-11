@@ -48,10 +48,19 @@
     {% endfor %}
 </table>
 
+<h2>API Directory</h2>
+<p>Click on one of the links bellow to jump to the API form</p>
+<ul>
+{% for api_object in apis %}
+    <li><a href="#{{api_object.name}}">{{api_object.name}}</a></li>
+{% endfor %}
+</ul>
+
+
 <h2>APIs</h2>
 {% for api_object in apis %}
 <div>
-    <h3>{{api_object.name}}</h3>
+    <h3><a name="{{api_object.name}}">{{api_object.name}}</a></h3>
     <h5>{{api_object.description}}</h5>
     <h5>{{api_object.http_method}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for argument in api_object.arguments %}&{{argument.name}}{% if argument.form_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
 
@@ -67,7 +76,7 @@
     <div>
         <form method="{{api_object.http_method}}"
               target="_blank"
-              action="{{airflow_webserver_base_url}}{{rest_api_endpoint}}"
+              action="{{airflow_webserver_base_url}}{{rest_api_endpoint}}{% if api_object.http_method == 'POST' %}?api={{api_object.name}}{% endif %}"
               enctype="{{ api_object.form_enctype if api_object.form_enctype else 'application/x-www-form-urlencoded' }}"
               onsubmit="return removeEmptyFields(this)"
         >
@@ -75,30 +84,36 @@
             <table>
                 <input type="hidden" name="api" value="{{api_object.name}}" />
 
-                <tr>
-                    <th>Argument Name</th>
-                    <th>Input</th>
-                    <th>Required</th>
-                    <th>Description</th>
-                </tr>
+                {% if api_object.arguments|length > 0 or api_object.post_arguments|length > 0 %}
 
-                {% for argument in api_object.arguments %}
-                <tr>
-                    <td>{{argument.name}}:</td>
-                    <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
-                    <td>{{argument.required}}</td>
-                    <td>{{argument.description}}</td>
-                </tr>
-                {% endfor %}
+                    <tr>
+                        <th>Argument Name</th>
+                        <th>Input</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
 
-                {% for argument in api_object.post_arguments %}
-                <tr>
-                    <td>{{argument.name}}:</td>
-                    <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
-                    <td>{{argument.required}}</td>
-                    <td>{{argument.description}}</td>
-                </tr>
-                {% endfor %}
+                    {% for argument in api_object.arguments %}
+                    <tr>
+                        <td>{{argument.name}}:</td>
+                        <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                        <td>{{argument.required}}</td>
+                        <td>{{argument.description}}</td>
+                    </tr>
+                    {% endfor %}
+
+                    {% for argument in api_object.post_arguments %}
+                    <tr>
+                        <td>{{argument.name}}:</td>
+                        <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                        <td>{{argument.required}}</td>
+                        <td>{{argument.description}}</td>
+                    </tr>
+                    {% endfor %}
+
+                {% else %}
+                    <b>No Arguments</b>
+                {% endif %}
 
                 <tr>
                     <td colspan="2"><input type="submit" value="Execute"/></td>
