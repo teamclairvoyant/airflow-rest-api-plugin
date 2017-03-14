@@ -62,7 +62,7 @@
 <div>
     <h3><a name="{{api_object.name}}">{{api_object.name}}</a></h3>
     <h5>{{api_object.description}}</h5>
-    <h5>{{api_object.http_method}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for argument in api_object.arguments %}&{{argument.name}}{% if argument.form_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
+    <h5>{{api_object.http_method|default('GET', true)}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for argument in api_object.arguments %}&{{argument.name}}{% if argument.form_input_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
 
     {% if api_object.form_enctype %}
     <h5>enctype=api_object.form_enctype</h5>
@@ -74,7 +74,7 @@
 
     <h6>Available in Airflow Version: <b>{{api_object.airflow_version}}</b></h6>
     <div>
-        <form method="{{api_object.http_method}}"
+        <form method="{{api_object.http_method|default('GET', true)}}"
               target="_blank"
               action="{{airflow_webserver_base_url}}{{rest_api_endpoint}}{% if api_object.http_method == 'POST' %}?api={{api_object.name}}{% endif %}"
               enctype="{{ api_object.form_enctype if api_object.form_enctype else 'application/x-www-form-urlencoded' }}"
@@ -96,7 +96,7 @@
                     {% for argument in api_object.arguments %}
                     <tr>
                         <td>{{argument.name}}:</td>
-                        <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                        <td><input type="{{argument.form_input_type}}" name="{{argument.name}}"/></td>
                         <td>{{argument.required}}</td>
                         <td>{{argument.description}}</td>
                     </tr>
@@ -105,7 +105,7 @@
                     {% for argument in api_object.post_arguments %}
                     <tr>
                         <td>{{argument.name}}:</td>
-                        <td><input type="{{argument.form_type}}" name="{{argument.name}}"/></td>
+                        <td><input type="{{argument.form_input_type}}" name="{{argument.name}}"/></td>
                         <td>{{argument.required}}</td>
                         <td>{{argument.description}}</td>
                     </tr>
