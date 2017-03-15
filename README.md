@@ -15,14 +15,26 @@ Also includes other useful REST APIs.
     * The location you should put it is usually at {AIRFLOW_HOME}/plugins. The specific location can be found in your airflow.cfg file:
     
         plugins_folder = /home/{USER_NAME}/airflow/plugins
-    
-2. Copy the contents of the plugins folder from this repo into the plugins folder you created on the Airflow server.
 
-3. Setup Authentication for Security (Optional)
+2. Download the release code you want to deploy
+
+    * Releases Available:
+        
+        * v0.0.1
+        
+        * v1.0.0
+    
+    * ULR to Download From:
+
+        https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION}.zip
+
+3. Unzip the file and move the contents of the plugins folder into your airlfow plugins directory
+
+4. Setup Authentication for Security (Optional)
 
     a. Follow the "Enabling Authentication" section bellow.
 
-4. Restart the Airflow Web Server
+5. Restart the Airflow Web Server
 
 ### Enabling Authentication
 
@@ -72,11 +84,13 @@ This web page will show the Endpoints supported and provide a form for you to te
 
 #### Endpoints
 
-###### Version
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=version
+###### version
 
 Gets the version of Airflow currently running
+
+Available in Airflow Version: 1.0.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
 Query Arguments:
 
@@ -86,171 +100,167 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
-###### Render
+###### rest_api_plugin_version
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=render
+Displays the version of this REST API Plugin you're using
+
+Available in Airflow Version: None - Custom API
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
+
+Query Arguments:
+
+None
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
+
+###### render
 
 Render a task instance's template(s)
 
-TODO: FILL OUT
+Available in Airflow Version: 1.7.0 or greater
 
-###### Variables
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=render
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
+Query Arguments:
+    
+* dag_id - string - The id of the dag
+     
+* task_id - string - The id of the task
+
+* execution_date - string - The execution date of the DAG
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=render
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&execution_date=value&subdir=value
+
+###### variables
 
 Displays the version of Airflow you're using
 
-TODO: FILL OUT
+Available in Airflow Version: 1.7.1 or greater
 
-###### Connections
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=connections
+Query Arguments:
+
+* set (optional) - string - Set a variable
+
+* get (optional) - string - Get value of a variable
+     
+* json (optional) - boolean - Deserialize JSON variable
+
+* default (optional) - string - Default value returned if variable does not exist
+
+* import (optional) - string - Import variables from JSON file
+
+* export (optional) - string - Export variables from JSON file
+
+* delete (optional) - string - Delete a variable
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=value&get=value&json&default=value&import=value&export=value&delete=value
+
+###### connections
 
 List/Add/Delete connections
 
-TODO: FILL OUT
+Available in Airflow Version: 1.8.0 or greater
 
-###### Pause
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=connections
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pause
+Query Arguments:
+
+* list (optional) - boolean - List all connections
+
+* add (optional) - string - Add a connection
+
+* delete (optional) - boolean - Delete a connection
+
+* conn_id (optional) - string - Connection id, required to add/delete a connection
+
+* conn_uri (optional) - string - Connection URI, required to add a connection
+
+* conn_extra (optional) - string - Connection 'Extra' field, optional when adding a connection
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=connections
+
+###### pause
 
 Pauses a DAG
 
-TODO: FILL OUT
+Available in Airflow Version: 1.7.0 or greater
 
-###### Unpause
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pause
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=unpause
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id
+
+###### unpause
 
 Resume a paused DAG
 
-TODO: FILL OUT
+Available in Airflow Version: 1.7.0 or greater
 
-###### Task Failed Dependencies
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=unpause
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id
+
+###### task_failed_deps
 
 Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).
 
-TODO: FILL OUT
+Available in Airflow Version: 1.8.0 or greater
 
-###### Test
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=test
+Query Arguments:
 
-Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.
+* dag_id - string - The id of the dag
+     
+* task_id - string - The id of the task
 
-TODO: FILL OUT
+* execution_date - string - The execution date of the DAG
 
-###### DAG State
+* subdir (optional) - string - File location or directory from which to look for the dag
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state
+Examples:
 
-Get the status of a dag run
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=value
 
-TODO: FILL OUT
+###### trigger_dag
 
-###### Run
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=run
-
-Run a single task instance
-
-TODO: FILL OUT
-
-###### List Tasks
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks
-
-List the tasks within a DAG
-
-TODO: FILL OUT
-
-###### Backfill
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=backfill
-
-Run subsections of a DAG for a specified date range
-
-TODO: FILL OUT
-
-###### List DAGs
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
-
-List all the DAGs
-
-TODO: FILL OUT
-
-###### Kerberos
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
-
-Start a kerberos ticket renewer
-
-TODO: FILL OUT
-
-###### Worker
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=worker
-
-Start a Celery worker node
-
-TODO: FILL OUT
-
-###### Flower
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=flower
-
-Start a Celery worker node
-
-TODO: FILL OUT
-
-###### Scheduler
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
-
-Start a scheduler instance
-
-TODO: FILL OUT
-
-###### Task State
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_state
-
-Get the status of a task instance
-
-TODO: FILL OUT
-
-###### Pool
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pool
-
-CRUD operations on pools
-
-TODO: FILL OUT
-
-###### Server Logs
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
-
-Serve logs generate by worker
-
-TODO: FILL OUT
-
-###### Clear
-
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=clear
-
-Clear a set of task instance, as if they never ran
-
-TODO: FILL OUT
-
-###### Trigger DAG
+Triggers a Dag to Run
 
 GET - http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag
 
-Triggers a Dag to Run
+Available in Airflow Version: 1.6.0 or greater
 
 Query Arguments:
     
@@ -266,21 +276,421 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
 
-###### Refresh DAG
+###### test
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag
+Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.
 
-Refresh a DAG
+Available in Airflow Version: 0.1 or greater
 
-TODO: FILL OUT
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=test
 
-###### Deploy DAG
+Query Arguments:
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+* dag_id - string - The id of the dag
+     
+* task_id - string - The id of the task
+
+* execution_date - string - The execution date of the DAG
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* dryrun (optional) - boolean - Perform a dry run
+
+* task_params (optional) - string - Sends a JSON params dict to the task
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=value
+
+###### dag_state
+
+Get the status of a dag run
+
+Available in Airflow Version: 1.8.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+* execution_date - string - The execution date of the DAG
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=value
+
+###### run
+
+Run a single task instance
+
+Available in Airflow Version: 1.0.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=run
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+     
+* task_id - string - The id of the task
+
+* execution_date - string - The execution date of the DAG
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* mark_success (optional) - boolean - Mark jobs as succeeded without running them
+
+* force (optional) - boolean - Ignore previous task instance state, rerun regardless if task already succeede
+
+* pool (optional) - boolean - Resource pool to use
+
+* cfg_path (optional) - boolean - Path to config file to use instead of airflow.cfg
+
+* local (optional) - boolean - Run the task using the LocalExecutor
+
+* ignore_all_dependencies (optional) - boolean - Ignores all non-critical dependencies, including ignore_ti_state and ignore_task_depsstore_true
+
+* ignore_dependencies (optional) - boolean - Ignore task-specific dependencies, e.g. upstream, depends_on_past, and retry delay dependencies
+
+* ignore_depends_on_past (optional) - boolean - Ignore depends_on_past dependencies (but respect upstream dependencies)
+
+* ship_dag (optional) - boolean - Pickles (serializes) the DAG and ships it to the worker
+
+* pickle (optional) - string - Serialized pickle object of the entire dag (used internally)
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=value
+
+###### list_tasks
+
+List the tasks within a DAG
+
+Available in Airflow Version: 0.1 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+     
+* tree (optional) - boolean - Tree view
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id
+
+###### backfill
+
+Run subsections of a DAG for a specified date range
+
+Available in Airflow Version: 0.1 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=backfill
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+* task_regex (optional) - string - The regex to filter specific task_ids to backfill (optional)
+
+* start_date (optional) - string - Override start_date YYYY-MM-DD
+
+* end_date (optional) - string - Override end_date YYYY-MM-DD
+
+* mark_success (optional) - boolean - Mark jobs as succeeded without running them
+
+* local (optional) - boolean - Run the task using the LocalExecutor
+
+* donot_pickle (optional) - boolean - Do not attempt to pickle the DAG object to send over to the workers, just tell the workers to run their version of the code.
+
+* include_adhoc (optional) - boolean - Include dags with the adhoc argument.
+
+* ignore_dependencies (optional) - boolean - Ignore task-specific dependencies, e.g. upstream, depends_on_past, and retry delay dependencies
+
+* ignore_first_depends_on_past (optional) - boolean - Ignores depends_on_past dependencies for the first set of tasks only (subsequent executions in the backfill DO respect depends_on_past)
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* pool (optional) - string - Resource pool to use
+
+* dry_run (optional) - boolean - Perform a dry run
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id
+
+###### list_dags
+
+List all the DAGs
+
+Available in Airflow Version: 0.1 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
+
+Query Arguments:
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* report (optional) - boolean - Show DagBag loading report
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
+
+###### kerberos
+
+Start a kerberos ticket renewer
+
+Available in Airflow Version: 1.6.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
+
+Query Arguments:
+
+* principal (optional) - string - kerberos principal
+
+* keytab (optional) - string - keytab
+
+* pid (optional) - string - PID file location
+
+* daemon (optional) - boolean - Daemonize instead of running in the foreground
+
+* stdout (optional) - string - Redirect stdout to this file
+
+* stderr (optional) - string - Redirect stderr to this file
+
+* log-file (optional) - string - Location of the log file
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
+
+###### worker
+
+Start a Celery worker node
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=worker
+
+Available in Airflow Version: 0.1 or greater
+
+Query Arguments:
+
+* do_pickle (optional) - boolean - Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.
+
+* queues (optional) - string - Comma delimited list of queues to serve
+
+* concurrency (optional) - string - The number of worker processes
+
+* pid (optional) - string - PID file location
+
+* daemon (optional) - boolean - Daemonize instead of running in the foreground
+
+* stdout (optional) - string - Redirect stdout to this file
+
+* stderr (optional) - string - Redirect stderr to this file
+
+* log-file (optional) - string - Location of the log file
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=worker
+
+###### flower
+
+Start a Celery worker node
+
+Available in Airflow Version: 1.0.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=flower
+
+Query Arguments:
+
+* hostname (optional) - string - Set the hostname on which to run the server
+
+* port (optional) - string - The port on which to run the server
+
+* flower_conf (optional) - string - Configuration file for flower
+
+* broker_api (optional) - string - Broker api
+
+* pid (optional) - string - PID file location
+
+* daemon (optional) - boolean - Daemonize instead of running in the foreground
+
+* stdout (optional) - string - Redirect stdout to this file
+
+* stderr (optional) - string - Redirect stderr to this file
+
+* log-file (optional) - string - Location of the log file
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=flower
+
+###### scheduler
+
+Start a scheduler instance
+
+Available in Airflow Version: 1.0.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
+
+Query Arguments:
+
+* dag_id (optional) - string - The id of the dag
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* run-duration (optional) - string - Set number of seconds to execute before exiting  
+
+* num_runs (optional) - string -  Set the number of runs to execute before exiting
+
+* do_pickle (optional) - boolean - Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.
+
+* pid (optional) - string - PID file location
+
+* daemon (optional) - boolean - Daemonize instead of running in the foreground
+
+* stdout (optional) - string - Redirect stdout to this file
+
+* stderr (optional) - string - Redirect stderr to this file
+
+* log-file (optional) - string - Location of the log file
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
+
+###### task_state
+
+Get the status of a task instance
+
+Available in Airflow Version: 1.0.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_state
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+     
+* task_id - string - The id of the task
+
+* execution_date - string - The execution date of the DAG
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=value
+
+###### pool
+
+CRUD operations on pools
+
+Available in Airflow Version: 1.8.0 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pool
+
+Query Arguments:
+
+* set (optional) - string - Set pool slot count and description, respectively
+
+* get (optional) - string - Get pool info
+
+* delete (optional) - string - Delete a pool
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=pool
+
+###### serve_logs
+
+Serve logs generate by worker
+
+Available in Airflow Version: 0.1 or greater
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
+
+Query Arguments:
+
+None
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
+
+###### clear
+
+Clear a set of task instance, as if they never ran
+
+Available in Airflow Version: 0.1 or greater 
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=clear
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+* task_regex (optional) - string - The regex to filter specific task_ids to backfill (optional)
+
+* start_date (optional) - string - Override start_date YYYY-MM-DD
+
+* end_date (optional) - string - Override end_date YYYY-MM-DD
+
+* subdir (optional) - string - File location or directory from which to look for the dag
+
+* upstream (optional) - boolean - Include upstream tasks
+
+* downstream (optional) - boolean - Include downstream tasks
+
+* no_confirm (optional) - boolean - Do not request confirmation
+
+* only_failed (optional) - boolean - Only failed jobs
+
+* only_running (optional) - boolean - Only running jobs
+
+* exclude_subdags (optional) - boolean - Exclude subdags
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=clear
+
+###### deploy_dag
 
 Deploy a new DAG
 
-TODO: FILL OUT
+Available in Airflow Version: None - Custom API
+
+POST - http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+
+Post Body Arguments:
+
+dag_file - file - Python file to upload and deploy
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+
+###### refresh_dag
+
+Refresh a DAG
+
+Available in Airflow Version: None - Custom API
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag
+
+Query Arguments:
+
+* dag_id - string - The id of the dag
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id
 
 #### API Response
 

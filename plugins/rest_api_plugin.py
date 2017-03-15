@@ -1,3 +1,6 @@
+__author__ = 'robertsanders'
+__version__ = "1.0.0"
+
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
 from airflow import configuration
@@ -56,6 +59,13 @@ apis = [
     {
         "name": "version",
         "description": "Displays the version of Airflow you're using",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "arguments": []
+    },
+    {
+        "name": "rest_api_plugin_version",
+        "description": "None - Custom API",
         "airflow_version": "1.0.0 or greater",
         "http_method": "GET",
         "arguments": []
@@ -211,7 +221,6 @@ apis = [
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
-            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
             {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
             {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
@@ -324,7 +333,7 @@ apis = [
         "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set pool slot count and description, respectively", "form_input_type": "checkbox", "required": False},
+            {"name": "set", "description": "Set pool slot count and description, respectively", "form_input_type": "text", "required": False},
             {"name": "get", "description": "Get pool info", "form_input_type": "text", "required": False},
             {"name": "delete", "description": "Delete a pool", "form_input_type": "text", "required": False}
         ]
@@ -344,10 +353,10 @@ apis = [
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
-            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
             {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
             {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
             {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
             {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False},
@@ -489,6 +498,8 @@ class REST_API(BaseView):
 
         if api == "version":
             final_response = self.version(base_response)
+        elif api == "rest_api_plugin_version":
+            final_response = self.rest_api_plugin_version(base_response)
         elif api == "deploy_dag":
             final_response = self.deploy_dag(base_response)
         elif api == "refresh_dag":
@@ -547,6 +558,10 @@ class REST_API(BaseView):
     def version(self, base_response):
         logging.info("Executing custom version function")
         return get_final_response(base_response, airflow.__version__)
+
+    def rest_api_plugin_version(self, base_response):
+        logging.info("Executing custom version function")
+        return get_final_response(base_response, __version__)
 
     def deploy_dag(self, base_response):
         logging.info("Executing custom deploy_dag function")
