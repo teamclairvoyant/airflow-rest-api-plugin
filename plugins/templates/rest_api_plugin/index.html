@@ -65,11 +65,11 @@
     <h5>{{api_object.http_method|default('GET', true)}} {{airflow_webserver_base_url}}{{rest_api_endpoint}}?api={{api_object.name}}{% if api_object.http_method != 'POST' %}{% for argument in api_object.arguments %}&{{argument.name}}{% if argument.form_input_type != 'checkbox' %}=value{% endif %}{% endfor %}{% endif %}</h5>
 
     {% if api_object.form_enctype %}
-    <h5>enctype=api_object.form_enctype</h5>
+    <h5>enctype={{api_object.form_enctype}}</h5>
     {% endif %}
 
     {% if api_object.post_body_description %}
-    <h6>{api_object.post_body_description}</h6>
+    <h6>{{api_object.post_body_description}}</h6>
     {% endif %}
 
     <h6>Available in Airflow Version: <b>{{api_object.airflow_version}}</b></h6>
