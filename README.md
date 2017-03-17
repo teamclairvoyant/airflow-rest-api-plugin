@@ -19,18 +19,28 @@ Also includes other useful REST APIs.
 2. Download the release code you want to deploy
 
     * Releases Available:
-        
         * v0.0.1
-        
         * v1.0.0
-    
+    * Branches Available:
+        * master
+        * development 
     * ULR to Download From:
 
-        https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION}.zip
+        https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
 
-3. Unzip the file and move the contents of the plugins folder into your airlfow plugins directory
+3. Unzip the file and move the contents of the plugins folder into your Airflow plugins directory
 
-4. Setup Authentication for Security (Optional)
+        mkdir -p {AIRFLOW_PLUGINS_FOLDER}
+    
+        unzip airflow-rest-api-plugin-{RELEASE_VERSION_OR_BRANCH_NAME}.zip
+    
+        cp -r airflow-rest-api-plugin-{RELEASE_VERSION_OR_BRANCH_NAME}/plugins/* {AIRFLOW_PLUGINS_FOLDER} 
+
+4. Update the base_url configuration in the airflow.cfg file to the public host or ip of the machine the Airflow instance is running on (Optional)
+
+    * This is required for the API admin page to display the correct host
+    
+5. Setup Authentication for Security (Optional)
 
     a. Follow the "Enabling Authentication" section bellow.
 

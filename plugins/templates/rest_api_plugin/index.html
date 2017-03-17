@@ -76,7 +76,7 @@
     <div>
         <form method="{{api_object.http_method|default('GET', true)}}"
               target="_blank"
-              action="{{airflow_webserver_base_url}}{{rest_api_endpoint}}{% if api_object.http_method == 'POST' %}?api={{api_object.name}}{% endif %}"
+              action="{{rest_api_endpoint}}{% if api_object.http_method == 'POST' %}?api={{api_object.name}}{% endif %}"
               enctype="{{ api_object.form_enctype if api_object.form_enctype else 'application/x-www-form-urlencoded' }}"
               onsubmit="return removeEmptyFields(this)"
         >

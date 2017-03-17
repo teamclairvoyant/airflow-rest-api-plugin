@@ -573,6 +573,7 @@ class REST_API(BaseView):
         if dag_file.filename == '':
             return get_400_error_response(base_response, "dag_file should be provided")
         if dag_file and dag_file.filename.endswith(".py"):
+            # todo: handle the case where the file already exists (add an argument to override if exists?)
             dag_file.save(os.path.join(airflow_dags_folder, dag_file.filename))
         else:
             return get_400_error_response(base_response, "dag_file is not a *.py file")
