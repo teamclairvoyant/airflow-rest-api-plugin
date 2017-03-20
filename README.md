@@ -140,7 +140,7 @@ Query Arguments:
      
 * task_id - string - The id of the task
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -160,7 +160,7 @@ GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
 Query Arguments:
 
-* set (optional) - string - Set a variable
+* set (optional) - string - Set a variable. Expected input in the form: KEY VALUE.
 
 * get (optional) - string - Get value of a variable
      
@@ -256,7 +256,7 @@ Query Arguments:
      
 * task_id - string - The id of the task
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -300,7 +300,7 @@ Query Arguments:
      
 * task_id - string - The id of the task
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -324,7 +324,7 @@ Query Arguments:
 
 * dag_id - string - The id of the dag
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -346,7 +346,7 @@ Query Arguments:
      
 * task_id - string - The id of the task
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -408,9 +408,9 @@ Query Arguments:
 
 * task_regex (optional) - string - The regex to filter specific task_ids to backfill (optional)
 
-* start_date (optional) - string - Override start_date YYYY-MM-DD
+* start_date (optional) - string - Override start_date YYYY-MM-DD. Either this or the end_date needs to be provided.
 
-* end_date (optional) - string - Override end_date YYYY-MM-DD
+* end_date (optional) - string - Override end_date YYYY-MM-DD. Either this or the start_date needs to be provided.
 
 * mark_success (optional) - boolean - Mark jobs as succeeded without running them
 
@@ -590,7 +590,7 @@ Query Arguments:
      
 * task_id - string - The id of the task
 
-* execution_date - string - The execution date of the DAG
+* execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
 
@@ -634,7 +634,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
 
-###### clear
+###### clear - NOTE: Currently Not Supported as the CLI asks for confirmation which the plugin doesn't handle.
 
 Clear a set of task instance, as if they never ran
 

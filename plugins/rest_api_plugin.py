@@ -78,17 +78,17 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {
         "name": "variables",
         "description": "CRUD operations on variables",
         "airflow_version": "1.7.1 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set a variable", "form_input_type": "text", "required": False},
+            {"name": "set", "description": "Set a variable. Expected input in the form: KEY VALUE.", "form_input_type": "text", "required": False},
             {"name": "get", "description": "Get value of a variable", "form_input_type": "text", "required": False},
             {"name": "json", "description": "Deserialize JSON variable", "form_input_type": "checkbox", "required": False},
             {"name": "default", "description": "Default value returned if variable does not exist", "form_input_type": "text", "required": False},
@@ -97,7 +97,7 @@ apis = [
             {"name": "delete", "description": "Delete a variable", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {  # todo: test when v1.8.0 of Airflow is released
         "name": "connections",
         "description": "List/Add/Delete connections",
         "airflow_version": "1.8.0 or greater",
@@ -131,7 +131,7 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {  # todo: test when v1.8.0 of Airflow is released
         "name": "task_failed_deps",
         "description": "Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).",
         "airflow_version": "1.8.0 or greater",
@@ -139,7 +139,7 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
@@ -156,7 +156,7 @@ apis = [
             {"name": "exec_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {
         "name": "test",
         "description": "Test a task instance. This will run a task without checking for dependencies or recording it's state in the database.",
         "airflow_version": "0.1 or greater",
@@ -164,24 +164,24 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False},
             {"name": "task_params", "description": "Sends a JSON params dict to the task", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {  # todo: test when v1.8.0 of Airflow is released
         "name": "dag_state",
         "description": "Get the status of a dag run",
         "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 2},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {
         "name": "run",
         "description": "Run a single task instance",
         "airflow_version": "1.0.0 or greater",
@@ -189,7 +189,7 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "mark_success", "description": "Mark jobs as succeeded without running them", "form_input_type": "checkbox", "required": False},
             {"name": "force", "description": "Ignore previous task instance state, rerun regardless if task already succeede", "form_input_type": "checkbox", "required": False},
@@ -214,7 +214,7 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {
         "name": "backfill",
         "description": "Run subsections of a DAG for a specified date range",
         "airflow_version": "0.1 or greater",
@@ -222,8 +222,8 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
-            {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
-            {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+            {"name": "start_date", "description": "Override start_date YYYY-MM-DD. Either this or the end_date needs to be provided.", "form_input_type": "text", "required": False},
+            {"name": "end_date", "description": "Override end_date YYYY-MM-DD. Either this or the start_date needs to be provided.", "form_input_type": "text", "required": False},
             {"name": "mark_success", "description": "Mark jobs as succeeded without running them", "form_input_type": "checkbox", "required": False},
             {"name": "local", "description": "Run the task using the LocalExecutor", "form_input_type": "checkbox", "required": False},
             {"name": "donot_pickle", "description": "Do not attempt to pickle the DAG object to send over to the workers, just tell the workers to run their version of the code.", "form_input_type": "checkbox", "required": False},
@@ -245,14 +245,14 @@ apis = [
             {"name": "report", "description": "Show DagBag loading report", "form_input_type": "checkbox", "required": False}
         ]
     },
-    {  # todo: test
+    {
         "name": "kerberos",
         "description": "Start a kerberos ticket renewer",
         "airflow_version": "1.6.0 or greater",
         "http_method": "GET",
         "background_mode": True,
         "arguments": [
-            {"name": "principal", "description": "kerberos principal", "form_input_type": "text", "required": True},
+            {"name": "principal", "description": "kerberos principal", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "keytab", "description": "keytab", "form_input_type": "text", "required": False},
             {"name": "pid", "description": "PID file location", "form_input_type": "text", "required": False},
             {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
@@ -261,7 +261,7 @@ apis = [
             {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
         ]
     },
-    {  # todo: test
+    {
         "name": "worker",
         "description": "Start a Celery worker node",
         "airflow_version": "0.1 or greater",
@@ -323,11 +323,11 @@ apis = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
             {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
-            {"name": "execution_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test
+    {  # todo: test when v1.8.0 of Airflow is released
         "name": "pool",
         "description": "CRUD operations on pools",
         "airflow_version": "1.8.0 or greater",
@@ -346,25 +346,25 @@ apis = [
         "background_mode": True,
         "arguments": []
     },
-    {  # todo: test
-        "name": "clear",
-        "description": "Clear a set of task instance, as if they never ran",
-        "airflow_version": "0.1 or greater",
-        "http_method": "GET",
-        "arguments": [
-            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
-            {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
-            {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
-            {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
-            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
-            {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
-            {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
-            {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False},
-            {"name": "only_failed", "description": "Only failed jobs", "form_input_type": "checkbox", "required": False},
-            {"name": "only_running", "description": "Only running jobs", "form_input_type": "checkbox", "required": False},
-            {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
-        ]
-    },
+    # { # not useable since the clear command asks for confirmation. todo: see if there is a way to get this working.
+    #     "name": "clear",
+    #     "description": "Clear a set of task instance, as if they never ran",
+    #     "airflow_version": "0.1 or greater",
+    #     "http_method": "GET",
+    #     "arguments": [
+    #         {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+    #         {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
+    #         {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+    #         {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+    #         {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+    #         {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
+    #         {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
+    #         {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False},
+    #         {"name": "only_failed", "description": "Only failed jobs", "form_input_type": "checkbox", "required": False},
+    #         {"name": "only_running", "description": "Only running jobs", "form_input_type": "checkbox", "required": False},
+    #         {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
+    #     ]
+    # },
     {
         "name": "deploy_dag",
         "description": "Deploy a new DAG File to the DAGs directory",
@@ -487,7 +487,7 @@ class REST_API(BaseView):
             if argument["required"]:
                 if is_arg_not_provided(argument_value):
                     missing_required_arguments.append(argument_name)
-            if argument_name == "dag_id":
+            if argument_name == "dag_id" and argument_value is not None:
                 dag_id = argument_value.strip()
         if len(missing_required_arguments) > 0:
             return get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
@@ -528,10 +528,9 @@ class REST_API(BaseView):
                     logging.info("argument['cli_end_position']: " + str(argument['cli_end_position']))
                     end_arguments[argument["cli_end_position"]-1] = argument_value
                 else:
-                    if argument["form_input_type"] == "checkbox":
-                        airflow_cmd_split.extend(["--" + argument_name])
-                    else:
-                        airflow_cmd_split.extend(["--" + argument_name, argument_value])
+                    airflow_cmd_split.extend(["--" + argument_name])
+                    if argument["form_input_type"] is not "checkbox":
+                        airflow_cmd_split.extend(argument_value.split(" "))
             else:
                 logging.warning("argument_value is null")
 
@@ -539,7 +538,7 @@ class REST_API(BaseView):
 
         if "background_mode" in api_object and api_object["background_mode"]:
             if request.args.get("log-file") is None:
-                airflow_cmd_split.append("> " + str(airflow_base_log_folder) + "/" + api_object["name"] + ".log")
+                airflow_cmd_split.append(">> " + str(airflow_base_log_folder) + "/" + api_object["name"] + ".log")
             airflow_cmd_split.append("&")
 
         airflow_cmd = " ".join(airflow_cmd_split)
