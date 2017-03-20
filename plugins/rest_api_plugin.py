@@ -65,8 +65,8 @@ apis = [
     },
     {
         "name": "rest_api_plugin_version",
-        "description": "None - Custom API",
-        "airflow_version": "1.0.0 or greater",
+        "description": "Displays the version of this REST API Plugin you're using",
+        "airflow_version": "None - Custom API",
         "http_method": "GET",
         "arguments": []
     },
