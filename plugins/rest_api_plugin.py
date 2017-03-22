@@ -24,6 +24,7 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 # todo: improve logging
 # todo: clean up functions and calling of those functions
 # todo: add comments
+# todo: dynamically decide which api objects to display based off which version of airflow is installed
 
 rest_api_endpoint = "/admin/rest_api/api"
 filter_loading_messages_in_cli_response = True
