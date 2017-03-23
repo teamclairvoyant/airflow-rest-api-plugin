@@ -259,7 +259,7 @@ apis = [
             {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
             {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
-            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
         ]
     },
     {
@@ -276,7 +276,7 @@ apis = [
             {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
             {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
-            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
         ]
     },
     {
@@ -295,7 +295,7 @@ apis = [
             {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
             {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
-        ]
+            ]
     },
     {
         "name": "scheduler",
@@ -313,7 +313,7 @@ apis = [
             {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
             {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
             {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
-            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
         ]
     },
     {
@@ -390,40 +390,6 @@ apis = [
 ]
 
 
-def get_base_response(status="OK", call_time=datetime.now(), include_arguments=True):
-    base_response = {"status": status, "call_time": call_time}
-    if include_arguments:
-        base_response["arguments"] = request.args
-    return base_response
-
-
-def get_final_response(base_response, output=None, airflow_cmd=None):
-    final_response = base_response
-    final_response["response_time"] = datetime.now()
-    if output:
-        final_response["output"] = output
-    if airflow_cmd:
-        final_response["airflow_cmd"] = airflow_cmd
-    return jsonify(final_response)
-
-
-def get_error_response(base_response, error_code, output=None):
-    base_response["status"] = "ERROR"
-    return get_final_response(base_response=base_response, output=output), error_code
-
-
-def get_403_error_response(base_response, output=None):
-    return get_error_response(base_response, 403, output)
-
-
-def get_400_error_response(base_response, output=None):
-    return get_error_response(base_response, 400, output)
-
-
-def is_arg_not_provided(arg):
-    return arg is None or arg == ""
-
-
 def http_token_secure(func):
     def secure_check(arg):
         logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
@@ -431,16 +397,54 @@ def http_token_secure(func):
             logging.info("Performing Token Authentication")
             if request.headers.get(airflow_rest_api_plugin_http_token_header_name, None) != airflow_expected_http_token:
                 logging.warn("Token Authentication Failed")
-                base_response = get_base_response(include_arguments=False)
-                return get_403_error_response(base_response=base_response, output="Token Authentication Failed")
+                base_response = REST_API_Response_Util.get_base_response(include_arguments=False)
+                return REST_API_Response_Util.get_403_error_response(base_response=base_response, output="Token Authentication Failed")
         return func(arg)
 
     return secure_check
 
 
+class REST_API_Response_Util():
+
+    @staticmethod
+    def get_base_response(status="OK", call_time=datetime.now(), include_arguments=True):
+        base_response = {"status": status, "call_time": call_time}
+        if include_arguments:
+            base_response["arguments"] = request.args
+        return base_response
+
+    @staticmethod
+    def get_final_response(base_response, output=None, airflow_cmd=None):
+        final_response = base_response
+        final_response["response_time"] = datetime.now()
+        if output:
+            final_response["output"] = output
+        if airflow_cmd:
+            final_response["airflow_cmd"] = airflow_cmd
+        return jsonify(final_response)
+
+    @staticmethod
+    def get_error_response(base_response, error_code, output=None):
+        base_response["status"] = "ERROR"
+        return REST_API_Response_Util.get_final_response(base_response=base_response, output=output), error_code
+
+    @staticmethod
+    def get_403_error_response(base_response, output=None):
+        return REST_API_Response_Util.get_error_response(base_response, 403, output)
+
+    @staticmethod
+    def get_400_error_response(base_response, output=None):
+        return REST_API_Response_Util.get_error_response(base_response, 400, output)
+
+
 class REST_API(BaseView):
 
-    def get_dagbag(self):
+    @staticmethod
+    def is_arg_not_provided(arg):
+        return arg is None or arg == ""
+
+    @staticmethod
+    def get_dagbag():
         return DagBag()
 
     @expose('/')
@@ -468,17 +472,17 @@ class REST_API(BaseView):
         if api is not None:
             api = api.strip()
         logging.info("api: " + str(api))
-        base_response = get_base_response()
+        base_response = REST_API_Response_Util.get_base_response()
 
-        if is_arg_not_provided(api):
-            return get_400_error_response(base_response, "api should be provided")
+        if self.is_arg_not_provided(api):
+            return REST_API_Response_Util.get_400_error_response(base_response, "api should be provided")
 
         api_object = None
         for api_object_to_check in apis:
             if api_object_to_check["name"] == api:
                 api_object = api_object_to_check
         if api_object is None:
-            return get_400_error_response(base_response, "api '" + str(api) + "' was not found")
+            return REST_API_Response_Util.get_400_error_response(base_response, "api '" + str(api) + "' was not found")
 
         missing_required_arguments = []
         dag_id = None
@@ -486,16 +490,16 @@ class REST_API(BaseView):
             argument_name = argument["name"]
             argument_value = request.args.get(argument_name)
             if argument["required"]:
-                if is_arg_not_provided(argument_value):
+                if self.is_arg_not_provided(argument_value):
                     missing_required_arguments.append(argument_name)
             if argument_name == "dag_id" and argument_value is not None:
                 dag_id = argument_value.strip()
         if len(missing_required_arguments) > 0:
-            return get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
+            return REST_API_Response_Util.get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
 
         if dag_id is not None:
             if dag_id not in self.get_dagbag().dags:
-                return get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
+                return REST_API_Response_Util.get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
 
         if api == "version":
             final_response = self.version(base_response)
@@ -553,46 +557,46 @@ class REST_API(BaseView):
         if filter_loading_messages_in_cli_response:
             output = self.filter_loading_messages(output)
 
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+        return REST_API_Response_Util.get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
 
     def version(self, base_response):
         logging.info("Executing custom version function")
-        return get_final_response(base_response, airflow.__version__)
+        return REST_API_Response_Util.get_final_response(base_response, airflow.__version__)
 
     def rest_api_plugin_version(self, base_response):
         logging.info("Executing custom version function")
-        return get_final_response(base_response, __version__)
+        return REST_API_Response_Util.get_final_response(base_response, __version__)
 
     def deploy_dag(self, base_response):
         logging.info("Executing custom deploy_dag function")
         # check if the post request has the file part
         if 'dag_file' not in request.files:
-            return get_400_error_response(base_response, "dag_file should be provided")
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
         # if user does not select file, browser also submits an empty part without filename
         if dag_file.filename == '':
-            return get_400_error_response(base_response, "dag_file should be provided")
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         if dag_file and dag_file.filename.endswith(".py"):
             # todo: handle the case where the file already exists (add an argument to override if exists?)
             dag_file.save(os.path.join(airflow_dags_folder, dag_file.filename))
         else:
-            return get_400_error_response(base_response, "dag_file is not a *.py file")
-        return get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
+        return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     def refresh_dag(self, base_response):
         logging.info("Executing custom refresh_dag function")
         dag_id = request.args.get('dag_id')
 
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
+        if self.is_arg_not_provided(dag_id):
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_id should be provided")
         elif " " in dag_id:
-            return get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
 
         refresh_dag_url = str(airflow_webserver_base_url) + '/admin/airflow/refresh?dag_id=' + str(dag_id)
         logging.info("Calling: " + str(refresh_dag_url))
         response = urllib2.urlopen(refresh_dag_url)
         html = response.read()  # avoid using this as the output because this will include a large HTML string
-        return get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
+        return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     @staticmethod
     def execute_cli_command_background_mode(airflow_cmd):
