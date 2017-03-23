@@ -15,6 +15,7 @@ import logging
 import subprocess
 import urllib2
 import os
+import socket
 
 """
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
@@ -28,6 +29,8 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 
 rest_api_endpoint = "/admin/rest_api/api"
 filter_loading_messages_in_cli_response = True
+
+hostname =socket.gethostname()
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
@@ -375,7 +378,8 @@ apis = [
         "form_enctype": "multipart/form-data",
         "arguments": [],
         "post_arguments": [
-            {"name": "dag_file", "description": "Python file to upload and deploy", "form_input_type": "file", "required": True}
+            {"name": "dag_file", "description": "Python file to upload and deploy", "form_input_type": "file", "required": True},
+            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False}
         ]
     },
     {
@@ -569,18 +573,28 @@ class REST_API(BaseView):
 
     def deploy_dag(self, base_response):
         logging.info("Executing custom deploy_dag function")
-        # check if the post request has the file part
-        if 'dag_file' not in request.files:
+
+        if 'dag_file' not in request.files:  # check if the post request has the file part
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
-        # if user does not select file, browser also submits an empty part without filename
-        if dag_file.filename == '':
+        force = True if request.form.get('force') is not None else False
+        logging.info("force: " + str(force))
+
+        if dag_file.filename == '':  # if user does not select file, browser submits an empty part without filename
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
+
         if dag_file and dag_file.filename.endswith(".py"):
-            # todo: handle the case where the file already exists (add an argument to override if exists?)
-            dag_file.save(os.path.join(airflow_dags_folder, dag_file.filename))
+            save_file_path = os.path.join(airflow_dags_folder, dag_file.filename)
+
+            if os.path.isfile(save_file_path) and not force:
+                return REST_API_Response_Util.get_400_error_response(base_response, "The file '" + save_file_path + "' already exists on host '" + hostname + "'.")
+
+            logging.info("Saving file to '" + save_file_path + "'")
+            dag_file.save(save_file_path)
+
         else:
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
+
         return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     def refresh_dag(self, base_response):

@@ -678,13 +678,23 @@ Available in Airflow Version: None - Custom API
 
 POST - http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
 
-Post Body Arguments:
+POST Body Arguments:
 
-dag_file - file - Python file to upload and deploy
+* dag_file - file - Python file to upload and deploy
+
+* force (optional) - boolean - Whether to forcefully upload the file if the file already exists or not
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+Header: multipart/form-data
+
+URL: http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+
+Body: dag_file=path_to_file&force=on
+
+CURL Example:
+
+curl -X POST -H 'Content-Type: multipart/form-data' -F 'dag_file=@/path/to/dag.py' -F 'force=on' http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
 
 ###### refresh_dag
 
