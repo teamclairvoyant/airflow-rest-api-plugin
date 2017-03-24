@@ -122,7 +122,6 @@ class REST_API(BaseView):
         base_response = get_base_response()
         return get_final_response(base_response, airflow.__version__)
 
-    # todo: test
     @expose(url_dict.get("VARIABLES_URL"))
     @http_token_secure
     def variables(self):
@@ -210,7 +209,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("TEST_URL"))
     @http_token_secure
     def test(self):
@@ -249,7 +247,7 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
+    # todo: test on 1.8.0
     @expose(url_dict.get("DAG_STATE_URL"))
     @http_token_secure
     def dag_state(self):
@@ -279,7 +277,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("RUN_URL"))
     @http_token_secure
     def run(self):
@@ -288,9 +285,6 @@ class REST_API(BaseView):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
         execution_date = request.args.get('execution_date')
-        subdir = request.args.get('subdir')
-        pool = request.args.get('pool')
-        pickle = request.args.get('pickle')
 
         if is_arg_not_provided(dag_id):
             return get_400_error_response(base_response, "dag_id should be provided")
@@ -300,12 +294,12 @@ class REST_API(BaseView):
             return get_400_error_response(base_response, "execution_date should be provided")
 
         command_split = ["airflow", "run"]
-        if subdir is not None:
-            command_split.extend(["--subdir", subdir])
+        if request.args.get('subdir') is not None:
+            command_split.extend(["--subdir", request.args.get('subdir')])
         if request.args.get('mark_success') is not None:
             command_split.append("--mark_success")
-        if pool is not None:
-            command_split.extend(["--pool", pool])
+        if request.args.get('pool') is not None:
+            command_split.extend(["--pool", request.args.get('pool')])
         if request.args.get('local') is not None:
             command_split.append("--local")
         if request.args.get('ignore_dependencies') is not None:
@@ -314,8 +308,8 @@ class REST_API(BaseView):
             command_split.append("--ignore_first_depends_on_past")
         if request.args.get('ship_dag') is not None:
             command_split.append("--ship_dag")
-        if pickle is not None:
-            command_split.extend(["--task_regex", pickle])
+        if request.args.get('pickle') is not None:
+            command_split.extend(["--pickle", request.args.get('pickle')])
         command_split.append(dag_id)
         command_split.append(task_id)
         command_split.append(execution_date)
@@ -355,7 +349,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("BACKFILL_URL"))
     @http_token_secure
     def backfill(self):
@@ -407,7 +400,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("LIST_DAGS_URL"))
     @http_token_secure
     def list_dags(self):
@@ -430,7 +422,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("KERBEROS_URL"))
     @http_token_secure
     def kerberos(self):
@@ -461,15 +452,13 @@ class REST_API(BaseView):
             command_split.extend(["--log-file", log_file])
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
 
-        output = self.collect_process_output(process)
+        airflow_cmd = " ".join(command_split)
+        exit_code = os.system(airflow_cmd)
+        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("WORKER_URL"))
     @http_token_secure
     def worker(self):
@@ -501,15 +490,13 @@ class REST_API(BaseView):
             command_split.extend(["--log-file", log_file])
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
 
-        output = self.collect_process_output(process)
+        airflow_cmd = " ".join(command_split)
+        exit_code = os.system(airflow_cmd)
+        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("SCHEDULER_URL"))
     @http_token_secure
     def scheduler(self):
@@ -547,15 +534,13 @@ class REST_API(BaseView):
             command_split.extend(["--log-file", log_file])
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
 
-        output = self.collect_process_output(process)
+        airflow_cmd = " ".join(command_split)
+        exit_code = os.system(airflow_cmd)
+        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("TASK_STATE_URL"))
     @http_token_secure
     def task_state(self):
@@ -581,11 +566,10 @@ class REST_API(BaseView):
         command_split.append(execution_date)
 
         logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
 
-        output = self.collect_process_output(process)
+        airflow_cmd = " ".join(command_split)
+        exit_code = os.system(airflow_cmd)
+        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
