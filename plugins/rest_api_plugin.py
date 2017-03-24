@@ -137,7 +137,7 @@ class REST_API(BaseView):
 
         command_split = ["airflow", "variables"]
         if set:
-            command_split.extend(["--set", set])
+            command_split.extend(["--set"] + set.split(" "))
         if get:
             command_split.extend(["--get", get])
         if request.args.get("json") is not None:
@@ -620,7 +620,6 @@ class REST_API(BaseView):
 
         return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
 
-    # todo: test
     @expose(url_dict.get("REFRESH_DAG_URL"))
     @http_token_secure
     def refresh_dag(self):
