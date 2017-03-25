@@ -2,11 +2,11 @@
 
 ### Description
 
-A plugin for Apache Airflow (https://github.com/apache/incubator-airflow) that exposes REST endpoints for the Command Line Interfaces listed in the airflow documentation:
+A plugin for [Apache Airflow](https://github.com/apache/incubator-airflow) that exposes REST endpoints for the Command Line Interfaces listed in the airflow documentation:
 
-http://airflow.incubator.apache.org/cli.html
+[http://airflow.incubator.apache.org/cli.html](http://airflow.incubator.apache.org/cli.html)
 
-Also includes other useful REST APIs.
+The plugin also includes other custom REST APIs.
 
 ### Deployment Instructions
 
@@ -20,10 +20,12 @@ Also includes other useful REST APIs.
 
     * Releases Available:
         * v0.0.1
+        * v0.0.2
         * v1.0.0
     * Branches Available:
         * master
-        * development 
+        * v0.0.2-branch 
+        * v1.0.0-branch 
     * ULR to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
@@ -76,12 +78,12 @@ curl --header "rest_api_plugin_http_token: {HTTP_TOKEN_PLACEHOLDER}" http://{HOS
 
 In the event that you have authentication enabled and the user calling the REST Endpoint doesn't include the header, you will get the following response:
 
-{
-  "call_time": "{TIMESTAMP}",
-  "output": "Token Authentication Failed",
-  "response_time": "{TIMESTAMP}",
-  "status": "ERROR"
-}
+    {
+      "call_time": "{TIMESTAMP}",
+      "output": "Token Authentication Failed",
+      "response_time": "{TIMESTAMP}",
+      "status": "ERROR"
+    }
 
 ### Using the REST API
 
@@ -94,7 +96,7 @@ This web page will show the Endpoints supported and provide a form for you to te
 
 #### Endpoints
 
-###### version
+##### version
 
 Gets the version of Airflow currently running
 
@@ -110,7 +112,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
-###### rest_api_plugin_version
+##### rest_api_plugin_version
 
 Displays the version of this REST API Plugin you're using
 
@@ -126,7 +128,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
 
-###### render
+##### render
 
 Render a task instance's template(s)
 
@@ -148,9 +150,9 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=render
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&execution_date=value&subdir=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05&subdir=value
 
-###### variables
+##### variables
 
 Displays the version of Airflow you're using
 
@@ -180,7 +182,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=value&get=value&json&default=value&import=value&export=value&delete=value
 
-###### connections
+##### connections
 
 List/Add/Delete connections
 
@@ -206,7 +208,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=connections
 
-###### pause
+##### pause
 
 Pauses a DAG
 
@@ -224,7 +226,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id
 
-###### unpause
+##### unpause
 
 Resume a paused DAG
 
@@ -242,7 +244,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id
 
-###### task_failed_deps
+##### task_failed_deps
 
 Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).
 
@@ -262,9 +264,9 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
 
-###### trigger_dag
+##### trigger_dag
 
 Triggers a Dag to Run
 
@@ -286,7 +288,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
 
-###### test
+##### test
 
 Test a task instance. This will run a task without checking for dependencies or recording it’s state in the database.
 
@@ -310,9 +312,9 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
 
-###### dag_state
+##### dag_state
 
 Get the status of a dag run
 
@@ -330,9 +332,9 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=2017-01-02T03:04:05
 
-###### run
+##### run
 
 Run a single task instance
 
@@ -372,9 +374,9 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
 
-###### list_tasks
+##### list_tasks
 
 List the tasks within a DAG
 
@@ -394,7 +396,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id
 
-###### backfill
+##### backfill
 
 Run subsections of a DAG for a specified date range
 
@@ -434,7 +436,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id
 
-###### list_dags
+##### list_dags
 
 List all the DAGs
 
@@ -452,7 +454,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
 
-###### kerberos
+##### kerberos
 
 Start a kerberos ticket renewer
 
@@ -480,7 +482,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
 
-###### worker
+##### worker
 
 Start a Celery worker node
 
@@ -510,7 +512,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=worker
 
-###### flower
+##### flower
 
 Start a Celery worker node
 
@@ -542,7 +544,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=flower
 
-###### scheduler
+##### scheduler
 
 Start a scheduler instance
 
@@ -576,7 +578,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
 
-###### task_state
+##### task_state
 
 Get the status of a task instance
 
@@ -596,9 +598,9 @@ Query Arguments:
 
 Examples:
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
 
-###### pool
+##### pool
 
 CRUD operations on pools
 
@@ -618,7 +620,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=pool
 
-###### serve_logs
+##### serve_logs
 
 Serve logs generate by worker
 
@@ -634,7 +636,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
 
-###### clear - NOTE: Currently Not Supported as the CLI asks for confirmation which the plugin doesn't handle.
+##### clear - NOTE: Currently Not Supported as the CLI asks for confirmation which the plugin doesn't handle.
 
 Clear a set of task instance, as if they never ran
 
@@ -670,7 +672,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=clear
 
-###### deploy_dag
+##### deploy_dag
 
 Deploy a new DAG
 
@@ -696,7 +698,7 @@ CURL Example:
 
 curl -X POST -H 'Content-Type: multipart/form-data' -F 'dag_file=@/path/to/dag.py' -F 'force=on' http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
 
-###### refresh_dag
+##### refresh_dag
 
 Refresh a DAG
 
@@ -725,11 +727,11 @@ status         - String     - Response Status of the call. (possible values: OK,
 
 **Sample** (Result of calling the versions endpoint)
 
-{
-  "airflow_cmd": "airflow version",
-  "arguments": {},
-  "call_time": "Tue, 29 Nov 2016 14:22:26 GMT",
-  "output": "1.7.0",
-  "response_time": "Tue, 29 Nov 2016 14:27:59 GMT",
-  "status": "OK"
-}
+    {
+      "airflow_cmd": "airflow version",
+      "arguments": {},
+      "call_time": "Tue, 29 Nov 2016 14:22:26 GMT",
+      "output": "1.7.0",
+      "response_time": "Tue, 29 Nov 2016 14:27:59 GMT",
+      "status": "OK"
+    }

@@ -30,7 +30,7 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 rest_api_endpoint = "/admin/rest_api/api"
 filter_loading_messages_in_cli_response = True
 
-hostname =socket.gethostname()
+hostname = socket.gethostname()
 airflow_version = airflow.__version__
 rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
@@ -398,13 +398,14 @@ apis = [
 
 def http_token_secure(func):
     def secure_check(arg):
-        logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
+        logging.info("Rest_API_Plugin.http_token_secure() called")
         if airflow_expected_http_token:
             logging.info("Performing Token Authentication")
             if request.headers.get(airflow_rest_api_plugin_http_token_header_name, None) != airflow_expected_http_token:
-                logging.warn("Token Authentication Failed")
+                warning_message = "Token Authentication Failed"
+                logging.warn(warning_message)
                 base_response = REST_API_Response_Util.get_base_response(include_arguments=False)
-                return REST_API_Response_Util.get_403_error_response(base_response=base_response, output="Token Authentication Failed")
+                return REST_API_Response_Util.get_403_error_response(base_response=base_response, output=warning_message)
         return func(arg)
 
     return secure_check
@@ -476,21 +477,23 @@ class REST_API(BaseView):
     @http_token_secure
     def api(self):
         logging.info("REST_API.api() called")
-        api = request.args.get('api')
-        if api is not None:
-            api = api.strip()
-        logging.info("api: " + str(api))
+
         base_response = REST_API_Response_Util.get_base_response()
 
+        api = request.args.get('api')
+        if api is not None:
+            api = api.strip().lower()
+        logging.info("api: " + str(api))
+
         if self.is_arg_not_provided(api):
-            return REST_API_Response_Util.get_400_error_response(base_response, "api should be provided")
+            return REST_API_Response_Util.get_400_error_response(base_response, "API should be provided")
 
         api_object = None
         for api_object_to_check in apis:
             if api_object_to_check["name"] == api:
                 api_object = api_object_to_check
         if api_object is None:
-            return REST_API_Response_Util.get_400_error_response(base_response, "api '" + str(api) + "' was not found")
+            return REST_API_Response_Util.get_400_error_response(base_response, "API '" + str(api) + "' was not found")
 
         missing_required_arguments = []
         dag_id = None
@@ -568,15 +571,15 @@ class REST_API(BaseView):
         return REST_API_Response_Util.get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
 
     def version(self, base_response):
-        logging.info("Executing custom version function")
+        logging.info("Executing custom 'version' function")
         return REST_API_Response_Util.get_final_response(base_response, airflow_version)
 
     def rest_api_plugin_version(self, base_response):
-        logging.info("Executing custom version function")
+        logging.info("Executing custom 'rest_api_plugin_version' function")
         return REST_API_Response_Util.get_final_response(base_response, rest_api_plugin_version)
 
     def deploy_dag(self, base_response):
-        logging.info("Executing custom deploy_dag function")
+        logging.info("Executing custom 'deploy_dag' function")
 
         if 'dag_file' not in request.files:  # check if the post request has the file part
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
@@ -602,7 +605,7 @@ class REST_API(BaseView):
         return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     def refresh_dag(self, base_response):
-        logging.info("Executing custom refresh_dag function")
+        logging.info("Executing custom 'refresh_dag' function")
         dag_id = request.args.get('dag_id')
 
         if self.is_arg_not_provided(dag_id):
@@ -618,7 +621,7 @@ class REST_API(BaseView):
 
     @staticmethod
     def execute_cli_command_background_mode(airflow_cmd):
-        logging.info("Running command in the background")
+        logging.info("Executing CLI Command in the Background")
         exit_code = os.system(airflow_cmd)
         output = REST_API.get_empty_process_output()
         output["stdout"] = "exit_code: " + str(exit_code)
@@ -626,6 +629,7 @@ class REST_API(BaseView):
 
     @staticmethod
     def execute_cli_command(airflow_cmd_split):
+        logging.info("Executing CLI Command")
         process = subprocess.Popen(airflow_cmd_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         return REST_API.collect_process_output(process)
