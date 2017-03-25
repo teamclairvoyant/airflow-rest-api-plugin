@@ -31,6 +31,8 @@ rest_api_endpoint = "/admin/rest_api/api"
 filter_loading_messages_in_cli_response = True
 
 hostname =socket.gethostname()
+airflow_version = airflow.__version__
+rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
@@ -464,7 +466,9 @@ class REST_API(BaseView):
                            dags=dags,
                            airflow_webserver_base_url=airflow_webserver_base_url,
                            rest_api_endpoint=rest_api_endpoint,
-                           apis=apis
+                           apis=apis,
+                           airflow_version=airflow_version,
+                           rest_api_plugin_version=rest_api_plugin_version
                            )
 
     @csrf.exempt
@@ -565,11 +569,11 @@ class REST_API(BaseView):
 
     def version(self, base_response):
         logging.info("Executing custom version function")
-        return REST_API_Response_Util.get_final_response(base_response, airflow.__version__)
+        return REST_API_Response_Util.get_final_response(base_response, airflow_version)
 
     def rest_api_plugin_version(self, base_response):
         logging.info("Executing custom version function")
-        return REST_API_Response_Util.get_final_response(base_response, __version__)
+        return REST_API_Response_Util.get_final_response(base_response, rest_api_plugin_version)
 
     def deploy_dag(self, base_response):
         logging.info("Executing custom deploy_dag function")
