@@ -80,6 +80,7 @@ In the event that you have authentication enabled and the user calling the REST 
 
     {
       "call_time": "{TIMESTAMP}",
+      "http_response_code": 403,
       "output": "Token Authentication Failed",
       "response_time": "{TIMESTAMP}",
       "status": "ERROR"
@@ -718,12 +719,13 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id
 
 The API's will all return a common response object. It is a JSON object with the following entries in it:
 
-* airflow_cmd    - String     - Airflow CLI command being ran on the local machine
-* arguments      - Dict       - Dictionary with the arguments you passed in and their values
-* call_time      - Timestamp  - Time in which the request was received by the server 
-* output         - String     - Text output from calling the CLI function
-* response_time  - Timestamp  - Time in which the response was sent back by the server 
-* status         - String     - Response Status of the call. (possible values: OK, ERROR)
+* airflow_cmd           - String    - Airflow CLI command being ran on the local machine
+* arguments             - Dict      - Dictionary with the arguments you passed in and their values
+* call_time             - Timestamp - Time in which the request was received by the server 
+* output                - String    - Text output from calling the CLI function
+* response_time         - Timestamp - Time in which the response was sent back by the server 
+* status                - String    - Response Status of the call. (possible values: OK, ERROR)
+* http_response_code    - Integer   - HTTP Response code 
 
 **Sample** (Result of calling the versions endpoint)
 
@@ -731,6 +733,7 @@ The API's will all return a common response object. It is a JSON object with the
       "airflow_cmd": "airflow version",
       "arguments": {},
       "call_time": "Tue, 29 Nov 2016 14:22:26 GMT",
+      "http_response_code": 200,
       "output": "1.7.0",
       "response_time": "Tue, 29 Nov 2016 14:27:59 GMT",
       "status": "OK"

@@ -25,7 +25,7 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 # todo: improve logging
 # todo: clean up functions and calling of those functions
 # todo: add comments
-# todo: dynamically decide which api objects to display based off which version of airflow is installed
+# todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
 
 rest_api_endpoint = "/admin/rest_api/api"
 filter_loading_messages_in_cli_response = True
@@ -414,34 +414,43 @@ def http_token_secure(func):
 class REST_API_Response_Util():
 
     @staticmethod
-    def get_base_response(status="OK", call_time=datetime.now(), include_arguments=True):
-        base_response = {"status": status, "call_time": call_time}
+    def get_base_response(status="OK", http_response_code=200, call_time=datetime.now(), include_arguments=True):
+        base_response = {"status": status, "http_response_code": http_response_code, "call_time": call_time}
         if include_arguments:
             base_response["arguments"] = request.args
         return base_response
 
     @staticmethod
-    def get_final_response(base_response, output=None, airflow_cmd=None):
+    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None):
         final_response = base_response
         final_response["response_time"] = datetime.now()
         if output:
             final_response["output"] = output
         if airflow_cmd:
             final_response["airflow_cmd"] = airflow_cmd
+        if http_response_code:
+            final_response["http_response_code"] = http_response_code
         return jsonify(final_response)
 
     @staticmethod
-    def get_error_response(base_response, error_code, output=None):
+    def get_200_response(base_response, output=None, airflow_cmd=None):
+        logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+
+    @staticmethod
+    def _get_error_response(base_response, error_code, output=None):
         base_response["status"] = "ERROR"
-        return REST_API_Response_Util.get_final_response(base_response=base_response, output=output), error_code
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, http_response_code=error_code), error_code
 
     @staticmethod
     def get_403_error_response(base_response, output=None):
-        return REST_API_Response_Util.get_error_response(base_response, 403, output)
+        logging.warning("Returning a 403 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 403, output)
 
     @staticmethod
     def get_400_error_response(base_response, output=None):
-        return REST_API_Response_Util.get_error_response(base_response, 400, output)
+        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 400, output)
 
 
 class REST_API(BaseView):
@@ -476,16 +485,15 @@ class REST_API(BaseView):
     @expose('/api', methods=["GET", "POST"])
     @http_token_secure
     def api(self):
-        logging.info("REST_API.api() called")
-
         base_response = REST_API_Response_Util.get_base_response()
 
         api = request.args.get('api')
         if api is not None:
             api = api.strip().lower()
-        logging.info("api: " + str(api))
+        logging.info("REST_API.api() called (api: " + str(api) + ")")
 
         if self.is_arg_not_provided(api):
+            logging.warning("api argument not provided")
             return REST_API_Response_Util.get_400_error_response(base_response, "API should be provided")
 
         api_object = None
@@ -493,6 +501,7 @@ class REST_API(BaseView):
             if api_object_to_check["name"] == api:
                 api_object = api_object_to_check
         if api_object is None:
+            logging.info("api '" + str(api) + "' was not found in the apis list in the REST API Plugin")
             return REST_API_Response_Util.get_400_error_response(base_response, "API '" + str(api) + "' was not found")
 
         missing_required_arguments = []
@@ -506,11 +515,12 @@ class REST_API(BaseView):
             if argument_name == "dag_id" and argument_value is not None:
                 dag_id = argument_value.strip()
         if len(missing_required_arguments) > 0:
+            logging.warning("Missing required arguments: " + str(missing_required_arguments))
             return REST_API_Response_Util.get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
 
-        if dag_id is not None:
-            if dag_id not in self.get_dagbag().dags:
-                return REST_API_Response_Util.get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
+        if dag_id is not None and dag_id not in self.get_dagbag().dags:
+            logging.info("DAG_ID '" + str(dag_id) + "' was not found in the DagBag list '" + str(self.get_dagbag().dags) + "'")
+            return REST_API_Response_Util.get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
 
         if api == "version":
             final_response = self.version(base_response)
@@ -568,41 +578,41 @@ class REST_API(BaseView):
         if filter_loading_messages_in_cli_response:
             output = self.filter_loading_messages(output)
 
-        return REST_API_Response_Util.get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
 
     def version(self, base_response):
         logging.info("Executing custom 'version' function")
-        return REST_API_Response_Util.get_final_response(base_response, airflow_version)
+        return REST_API_Response_Util.get_200_response(base_response, airflow_version)
 
     def rest_api_plugin_version(self, base_response):
         logging.info("Executing custom 'rest_api_plugin_version' function")
-        return REST_API_Response_Util.get_final_response(base_response, rest_api_plugin_version)
+        return REST_API_Response_Util.get_200_response(base_response, rest_api_plugin_version)
 
     def deploy_dag(self, base_response):
         logging.info("Executing custom 'deploy_dag' function")
 
-        if 'dag_file' not in request.files:  # check if the post request has the file part
+        if 'dag_file' not in request.files or request.files['dag_file'].filename == '':  # check if the post request has the file part
+            logging.warning("The dag_file argument wasn't provided")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
         force = True if request.form.get('force') is not None else False
-        logging.info("force: " + str(force))
-
-        if dag_file.filename == '':  # if user does not select file, browser submits an empty part without filename
-            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
+        logging.info("deploy_dag force upload: " + str(force))
 
         if dag_file and dag_file.filename.endswith(".py"):
             save_file_path = os.path.join(airflow_dags_folder, dag_file.filename)
 
             if os.path.isfile(save_file_path) and not force:
+                logging.warning("File to upload already exists")
                 return REST_API_Response_Util.get_400_error_response(base_response, "The file '" + save_file_path + "' already exists on host '" + hostname + "'.")
 
             logging.info("Saving file to '" + save_file_path + "'")
             dag_file.save(save_file_path)
 
         else:
+            logging.warning("deploy_dag file is not a python file")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
 
-        return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
     def refresh_dag(self, base_response):
         logging.info("Executing custom 'refresh_dag' function")
@@ -617,7 +627,7 @@ class REST_API(BaseView):
         logging.info("Calling: " + str(refresh_dag_url))
         response = urllib2.urlopen(refresh_dag_url)
         html = response.read()  # avoid using this as the output because this will include a large HTML string
-        return REST_API_Response_Util.get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     @staticmethod
     def execute_cli_command_background_mode(airflow_cmd):
