@@ -611,7 +611,7 @@ GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pool
 
 Query Arguments:
 
-* set (optional) - string - Set pool slot count and description, respectively
+* set (optional) - string - Set pool slot count and description, respectively. Expected input in the form: NAME SLOT_COUNT POOL_DESCRIPTION.
 
 * get (optional) - string - Get pool info
 
