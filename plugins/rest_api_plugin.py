@@ -41,6 +41,8 @@ airflow_expected_http_token = None
 if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
     airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
 
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 """
 API OBJECT:
 {
@@ -137,7 +139,7 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test when v1.8.0 of Airflow is released
+    {
         "name": "task_failed_deps",
         "description": "Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).",
         "airflow_version": "1.8.0 or greater",
@@ -176,7 +178,7 @@ apis = [
             {"name": "task_params", "description": "Sends a JSON params dict to the task", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test when v1.8.0 of Airflow is released
+    {
         "name": "dag_state",
         "description": "Get the status of a dag run",
         "airflow_version": "1.8.0 or greater",
@@ -333,13 +335,13 @@ apis = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test when v1.8.0 of Airflow is released
+    {
         "name": "pool",
         "description": "CRUD operations on pools",
         "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set pool slot count and description, respectively", "form_input_type": "text", "required": False},
+            {"name": "set", "description": "Set pool slot count and description, respectively. Expected input in the form: NAME SLOT_COUNT POOL_DESCRIPTION.", "form_input_type": "text", "required": False},
             {"name": "get", "description": "Get pool info", "form_input_type": "text", "required": False},
             {"name": "delete", "description": "Delete a pool", "form_input_type": "text", "required": False}
         ]
@@ -470,7 +472,7 @@ class REST_API(BaseView):
         dags = []
         for dag_id in dagbag.dags:
             orm_dag = DagModel.get_current(dag_id)
-            dags.append({"dag_id": dag_id, "is_active": not orm_dag.is_paused})
+            dags.append({"dag_id": dag_id, "is_active": (not orm_dag.is_paused) if orm_dag is not None else False})
 
         return self.render("rest_api_plugin/index.html",
                            dags=dags,
