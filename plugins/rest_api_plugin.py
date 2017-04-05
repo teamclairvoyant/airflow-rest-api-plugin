@@ -1,3 +1,6 @@
+__author__ = 'robertsanders'
+__version__ = "1.0.0"
+
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
 from airflow import configuration
@@ -12,636 +15,648 @@ import logging
 import subprocess
 import urllib2
 import os
+import socket
 
 """
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: display the output of the commands nicer
-# todo: test functions
-# todo: make this more dynamic and easier to add more functions
+# todo: test remaining functions
+# todo: improve logging
+# todo: clean up functions and calling of those functions
+# todo: add comments
+# todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
 
-url_dict = dict(
-    REST_API_BASE_URL="/admin/rest_api",
-    VERSION_URL="/api/v1.0/version",
-    VARIABLES_URL="/api/v1.0/variables",
-    PAUSE_URL="/api/v1.0/pause",
-    UNPAUSE_URL="/api/v1.0/unpause",
-    TEST_URL="/api/v1.0/test",
-    DAG_STATE_URL="/api/v1.0/dag_state",
-    RUN_URL="/api/v1.0/run",
-    LIST_TASKS_URL="/api/v1.0/list_tasks",
-    BACKFILL_URL="/api/v1.0/backfill",
-    LIST_DAGS_URL="/api/v1.0/list_dags",
-    KERBEROS_URL="/api/v1.0/kerberos",
-    WORKER_URL="/api/v1.0/worker",
-    SCHEDULER_URL="/api/v1.0/scheduler",
-    TASK_STATE_URL="/api/v1.0/task_state",
-    TRIGGER_DAG_URL="/api/v1.0/trigger_dag",
-    REFRESH_DAG_URL="/api/v1.0/refresh_dag",
-    DEPLOY_DAG_URL="/api/v1.0/deploy_dag"
-)
+rest_api_endpoint = "/admin/rest_api/api"
+filter_loading_messages_in_cli_response = True
 
+hostname = socket.gethostname()
+airflow_version = airflow.__version__
+rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
-dags_folder = configuration.get('core', 'DAGS_FOLDER')
-rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
-expected_http_token = None
+airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
+airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
+airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
+airflow_expected_http_token = None
 if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
-    expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
+    airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
 
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
-def get_base_response(status="OK", call_time=datetime.now(), include_arguments=True):
-    base_response = {"status": status, "call_time": call_time}
-    if include_arguments:
-        base_response["arguments"] = request.args
-    return base_response
+"""
+API OBJECT:
+{
+    "name": "{string}",                     # Name of the API (cli command to be executed)
+    "description": "{string}",              # Description of the API
+    "airflow_version": "{string}",          # Version the API was available in to allow people to better determine if the API is available. (to be displayed on the Admin page)
+    "http_method": "{string}",              # HTTP method to use when calling the function. (Default: GET) (Optional)
+    "background_mode": {boolean},           # Whether to run the process in the background if its a CLI API (Optional)
+    "arguments": [                          # List of arguments that can be provided to the API
+        {
+            "name": "{string}",             # Name of the argument
+            "description": "{string}",      # Description of the argument
+            "form_input_type": "{string}",  # Type of input to use on the Admin page for the argument
+            "required": {boolean},          # Whether the argument is required upon submission
+            "cli_end_position": {int}       # In the case with a CLI command that the arguments value should be appended on to the end (for example: airflow trigger_dag some_dag_id), this is the position that the argument should be provided in the CLI command. (Optional)
+        }
+    ]
+},
+"""
 
-
-def get_final_response(base_response, output=None, airflow_cmd=None):
-    final_response = base_response
-    final_response["response_time"] = datetime.now()
-    if output:
-        final_response["output"] = output
-    if airflow_cmd:
-        final_response["airflow_cmd"] = airflow_cmd
-    return jsonify(final_response)
-
-
-def get_error_response(base_response, error_code, output=None):
-    base_response["status"] = "ERROR"
-    return get_final_response(base_response=base_response, output=output), error_code
-
-
-def get_403_error_response(base_response, output=None):
-    return get_error_response(base_response, 403, output)
-
-
-def get_400_error_response(base_response, output=None):
-    return get_error_response(base_response, 400, output)
-
-
-def is_arg_not_provided(arg):
-    return arg is None or arg == ""
+apis = [
+    {
+        "name": "version",
+        "description": "Displays the version of Airflow you're using",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "arguments": []
+    },
+    {
+        "name": "rest_api_plugin_version",
+        "description": "Displays the version of this REST API Plugin you're using",
+        "airflow_version": "None - Custom API",
+        "http_method": "GET",
+        "arguments": []
+    },
+    {
+        "name": "render",
+        "description": "Render a task instance's template(s)",
+        "airflow_version": "1.7.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "variables",
+        "description": "CRUD operations on variables",
+        "airflow_version": "1.7.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "set", "description": "Set a variable. Expected input in the form: KEY VALUE.", "form_input_type": "text", "required": False},
+            {"name": "get", "description": "Get value of a variable", "form_input_type": "text", "required": False},
+            {"name": "json", "description": "Deserialize JSON variable", "form_input_type": "checkbox", "required": False},
+            {"name": "default", "description": "Default value returned if variable does not exist", "form_input_type": "text", "required": False},
+            {"name": "import", "description": "Import variables from JSON file", "form_input_type": "text", "required": False},
+            {"name": "export", "description": "Export variables to JSON file", "form_input_type": "text", "required": False},
+            {"name": "delete", "description": "Delete a variable", "form_input_type": "text", "required": False}
+        ]
+    },
+    {  # todo: test when v1.8.0 of Airflow is released
+        "name": "connections",
+        "description": "List/Add/Delete connections",
+        "airflow_version": "1.8.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "list", "description": "List all connections", "form_input_type": "checkbox", "required": False},
+            {"name": "add", "description": "Add a connection", "form_input_type": "checkbox", "required": False},
+            {"name": "delete", "description": "Delete a connection", "form_input_type": "checkbox", "required": False},
+            {"name": "conn_id", "description": "Connection id, required to add/delete a connection", "form_input_type": "text", "required": False},
+            {"name": "conn_uri", "description": "Connection URI, required to add a connection", "form_input_type": "text", "required": False},
+            {"name": "conn_extra", "description": "Connection 'Extra' field, optional when adding a connection", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "pause",
+        "description": "Pauses a DAG",
+        "airflow_version": "1.7.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "unpause",
+        "description": "Unpauses a DAG",
+        "airflow_version": "1.7.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "task_failed_deps",
+        "description": "Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).",
+        "airflow_version": "1.8.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "trigger_dag",
+        "description": "Trigger a DAG run",
+        "airflow_version": "1.6.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "run_id", "description": "Helps to identify this run", "form_input_type": "text", "required": False},
+            {"name": "conf", "description": "JSON string that gets pickled into the DagRun's conf attribute", "form_input_type": "text", "required": False},
+            {"name": "exec_date", "description": "The execution date of the DAG", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "test",
+        "description": "Test a task instance. This will run a task without checking for dependencies or recording it's state in the database.",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False},
+            {"name": "task_params", "description": "Sends a JSON params dict to the task", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "dag_state",
+        "description": "Get the status of a dag run",
+        "airflow_version": "1.8.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "run",
+        "description": "Run a single task instance",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "mark_success", "description": "Mark jobs as succeeded without running them", "form_input_type": "checkbox", "required": False},
+            {"name": "force", "description": "Ignore previous task instance state, rerun regardless if task already succeede", "form_input_type": "checkbox", "required": False},
+            {"name": "pool", "description": "Resource pool to use", "form_input_type": "text", "required": False},
+            {"name": "cfg_path", "description": "Path to config file to use instead of airflow.cfg", "form_input_type": "text", "required": False},
+            {"name": "local", "description": "Run the task using the LocalExecutor", "form_input_type": "checkbox", "required": False},
+            {"name": "ignore_all_dependencies", "description": "Ignores all non-critical dependencies, including ignore_ti_state and ignore_task_depsstore_true", "form_input_type": "checkbox", "required": False},
+            {"name": "ignore_dependencies", "description": "Ignore task-specific dependencies, e.g. upstream, depends_on_past, and retry delay dependencies", "form_input_type": "checkbox", "required": False},
+            {"name": "ignore_depends_on_past", "description": "Ignore depends_on_past dependencies (but respect upstream dependencies)", "form_input_type": "checkbox", "required": False},
+            {"name": "ship_dag", "description": "Pickles (serializes) the DAG and ships it to the worker", "form_input_type": "checkbox", "required": False},
+            {"name": "pickle", "description": "Serialized pickle object of the entire dag (used internally)", "form_input_type": "text", "required": False},
+        ]
+    },
+    {
+        "name": "list_tasks",
+        "description": "List the tasks within a DAG",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "tree", "description": "Tree view", "form_input_type": "checkbox", "required": False},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "backfill",
+        "description": "Run subsections of a DAG for a specified date range",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
+            {"name": "start_date", "description": "Override start_date YYYY-MM-DD. Either this or the end_date needs to be provided.", "form_input_type": "text", "required": False},
+            {"name": "end_date", "description": "Override end_date YYYY-MM-DD. Either this or the start_date needs to be provided.", "form_input_type": "text", "required": False},
+            {"name": "mark_success", "description": "Mark jobs as succeeded without running them", "form_input_type": "checkbox", "required": False},
+            {"name": "local", "description": "Run the task using the LocalExecutor", "form_input_type": "checkbox", "required": False},
+            {"name": "donot_pickle", "description": "Do not attempt to pickle the DAG object to send over to the workers, just tell the workers to run their version of the code.", "form_input_type": "checkbox", "required": False},
+            {"name": "include_adhoc", "description": "Include dags with the adhoc argument.", "form_input_type": "checkbox", "required": False},
+            {"name": "ignore_dependencies", "description": "Ignore task-specific dependencies, e.g. upstream, depends_on_past, and retry delay dependencies", "form_input_type": "checkbox", "required": False},
+            {"name": "ignore_first_depends_on_past", "description": "Ignores depends_on_past dependencies for the first set of tasks only (subsequent executions in the backfill DO respect depends_on_past).", "form_input_type": "checkbox", "required": False},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "pool", "description": "Resource pool to use", "form_input_type": "text", "required": False},
+            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False}
+        ]
+    },
+    {
+        "name": "list_dags",
+        "description": "List all the DAGs",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "report", "description": "Show DagBag loading report", "form_input_type": "checkbox", "required": False}
+        ]
+    },
+    {
+        "name": "kerberos",
+        "description": "Start a kerberos ticket renewer",
+        "airflow_version": "1.6.0 or greater",
+        "http_method": "GET",
+        "background_mode": True,
+        "arguments": [
+            {"name": "principal", "description": "kerberos principal", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "keytab", "description": "keytab", "form_input_type": "text", "required": False},
+            {"name": "pid", "description": "PID file location", "form_input_type": "text", "required": False},
+            {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
+            {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
+            {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "worker",
+        "description": "Start a Celery worker node",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "background_mode": True,
+        "arguments": [
+            {"name": "do_pickle", "description": "Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.", "form_input_type": "checkbox", "required": False},
+            {"name": "queues", "description": "Comma delimited list of queues to serve", "form_input_type": "text", "required": False},
+            {"name": "concurrency", "description": "The number of worker processes", "form_input_type": "text", "required": False},
+            {"name": "pid", "description": "PID file location", "form_input_type": "checkbox", "required": False},
+            {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
+            {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
+            {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "flower",
+        "description": "Start a Celery worker node",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "background_mode": True,
+        "arguments": [
+            {"name": "hostname", "description": "Set the hostname on which to run the server", "form_input_type": "text", "required": False},
+            {"name": "port", "description": "The port on which to run the server", "form_input_type": "text", "required": False},
+            {"name": "flower_conf", "description": "Configuration file for flower", "form_input_type": "text", "required": False},
+            {"name": "broker_api", "description": "Broker api", "form_input_type": "text", "required": False},
+            {"name": "pid", "description": "PID file location", "form_input_type": "text", "required": False},
+            {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
+            {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
+            {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False},
+            ]
+    },
+    {
+        "name": "scheduler",
+        "description": "Start a scheduler instance",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "background_mode": True,
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": False},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "run-duration", "description": "Set number of seconds to execute before exiting", "form_input_type": "text", "required": False},
+            {"name": "num_runs", "description": "Set the number of runs to execute before exiting", "form_input_type": "text", "required": False},
+            {"name": "do_pickle", "description": "Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.", "form_input_type": "text", "required": False},
+            {"name": "pid", "description": "PID file location", "form_input_type": "checkbox", "required": False},
+            {"name": "daemon", "description": "Daemonize instead of running in the foreground", "form_input_type": "checkbox", "required": False},
+            {"name": "stdout", "description": "Redirect stdout to this file", "form_input_type": "text", "required": False},
+            {"name": "stderr", "description": "Redirect stderr to this file", "form_input_type": "text", "required": False},
+            {"name": "log-file", "description": "Location of the log file", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "task_state",
+        "description": "Get the status of a task instance",
+        "airflow_version": "1.0.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_id", "description": "The id of the task", "form_input_type": "text", "required": True, "cli_end_position": 2},
+            {"name": "execution_date", "description": "The execution date of the DAG (Example: 2017-01-02T03:04:05)", "form_input_type": "text", "required": True, "cli_end_position": 3},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "pool",
+        "description": "CRUD operations on pools",
+        "airflow_version": "1.8.0 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "set", "description": "Set pool slot count and description, respectively. Expected input in the form: NAME SLOT_COUNT POOL_DESCRIPTION.", "form_input_type": "text", "required": False},
+            {"name": "get", "description": "Get pool info", "form_input_type": "text", "required": False},
+            {"name": "delete", "description": "Delete a pool", "form_input_type": "text", "required": False}
+        ]
+    },
+    {
+        "name": "serve_logs",
+        "description": "Serve logs generate by worker",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "background_mode": True,
+        "arguments": []
+    },
+    # { # not useable since the clear command asks for confirmation. todo: see if there is a way to get this working.
+    #     "name": "clear",
+    #     "description": "Clear a set of task instance, as if they never ran",
+    #     "airflow_version": "0.1 or greater",
+    #     "http_method": "GET",
+    #     "arguments": [
+    #         {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+    #         {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
+    #         {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+    #         {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+    #         {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+    #         {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
+    #         {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
+    #         {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False},
+    #         {"name": "only_failed", "description": "Only failed jobs", "form_input_type": "checkbox", "required": False},
+    #         {"name": "only_running", "description": "Only running jobs", "form_input_type": "checkbox", "required": False},
+    #         {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
+    #     ]
+    # },
+    {
+        "name": "deploy_dag",
+        "description": "Deploy a new DAG File to the DAGs directory",
+        "airflow_version": "None - Custom API",
+        "http_method": "POST",
+        "post_body_description": "dag_file - POST Body Element - REQUIRED",
+        "form_enctype": "multipart/form-data",
+        "arguments": [],
+        "post_arguments": [
+            {"name": "dag_file", "description": "Python file to upload and deploy", "form_input_type": "file", "required": True},
+            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False}
+        ]
+    },
+    {
+        "name": "refresh_dag",
+        "description": "Refresh a DAG in the Web Server",
+        "airflow_version": "None - Custom API",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True}
+        ]
+    }
+]
 
 
 def http_token_secure(func):
     def secure_check(arg):
-        logging.info("Rest_API_Plugin.http_token_secure() func: " + str(func))
-        if expected_http_token:
+        logging.info("Rest_API_Plugin.http_token_secure() called")
+        if airflow_expected_http_token:
             logging.info("Performing Token Authentication")
-            if request.headers.get(rest_api_plugin_http_token_header_name, None) != expected_http_token:
-                logging.warn("Token Authentication Failed")
-                base_response = get_base_response(include_arguments=False)
-                return get_403_error_response(base_response=base_response, output="Token Authentication Failed")
+            if request.headers.get(airflow_rest_api_plugin_http_token_header_name, None) != airflow_expected_http_token:
+                warning_message = "Token Authentication Failed"
+                logging.warn(warning_message)
+                base_response = REST_API_Response_Util.get_base_response(include_arguments=False)
+                return REST_API_Response_Util.get_403_error_response(base_response=base_response, output=warning_message)
         return func(arg)
 
     return secure_check
 
 
+class REST_API_Response_Util():
+
+    @staticmethod
+    def get_base_response(status="OK", http_response_code=200, call_time=datetime.now(), include_arguments=True):
+        base_response = {"status": status, "http_response_code": http_response_code, "call_time": call_time}
+        if include_arguments:
+            base_response["arguments"] = request.args
+        return base_response
+
+    @staticmethod
+    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None):
+        final_response = base_response
+        final_response["response_time"] = datetime.now()
+        if output:
+            final_response["output"] = output
+        if airflow_cmd:
+            final_response["airflow_cmd"] = airflow_cmd
+        if http_response_code:
+            final_response["http_response_code"] = http_response_code
+        return jsonify(final_response)
+
+    @staticmethod
+    def get_200_response(base_response, output=None, airflow_cmd=None):
+        logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+
+    @staticmethod
+    def _get_error_response(base_response, error_code, output=None):
+        base_response["status"] = "ERROR"
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, http_response_code=error_code), error_code
+
+    @staticmethod
+    def get_403_error_response(base_response, output=None):
+        logging.warning("Returning a 403 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 403, output)
+
+    @staticmethod
+    def get_400_error_response(base_response, output=None):
+        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 400, output)
+
+
 class REST_API(BaseView):
+
+    @staticmethod
+    def is_arg_not_provided(arg):
+        return arg is None or arg == ""
+
+    @staticmethod
+    def get_dagbag():
+        return DagBag()
 
     @expose('/')
     def index(self):
         logging.info("REST_API.index() called")
-        dagbag = DagBag()
+        dagbag = self.get_dagbag()
         dags = []
         for dag_id in dagbag.dags:
             orm_dag = DagModel.get_current(dag_id)
-            dags.append({"dag_id": dag_id, "is_active": not orm_dag.is_paused})
+            dags.append({"dag_id": dag_id, "is_active": (not orm_dag.is_paused) if orm_dag is not None else False})
 
         return self.render("rest_api_plugin/index.html",
                            dags=dags,
                            airflow_webserver_base_url=airflow_webserver_base_url,
-                           url_dict=url_dict
+                           rest_api_endpoint=rest_api_endpoint,
+                           apis=apis,
+                           airflow_version=airflow_version,
+                           rest_api_plugin_version=rest_api_plugin_version
                            )
 
-    @expose(url_dict.get("VERSION_URL"))
-    @http_token_secure
-    def version(self):
-        logging.info("REST_API.version() called")
-        base_response = get_base_response()
-        return get_final_response(base_response, airflow.__version__)
-
-    @expose(url_dict.get("VARIABLES_URL"))
-    @http_token_secure
-    def variables(self):
-        logging.info("REST_API.variables() called")
-        base_response = get_base_response()
-        set = request.args.get('set')
-        get = request.args.get('get')
-        default = request.args.get('default')
-        import_arg = request.args.get('import')
-        export = request.args.get('export')
-        delete = request.args.get('delete')
-
-        command_split = ["airflow", "variables"]
-        if set:
-            command_split.extend(["--set"] + set.split(" "))
-        if get:
-            command_split.extend(["--get", get])
-        if request.args.get("json") is not None:
-            command_split.append("--json")
-        if default:
-            command_split.extend(["--default", default])
-        if import_arg:
-            command_split.extend(["--import_arg", import_arg])
-        if export:
-            command_split.extend(["--export", export])
-        if delete:
-            command_split.extend(["--delete", delete])
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("PAUSE_URL"))
-    @http_token_secure
-    def pause(self):
-        logging.info("REST_API.pause() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        subdir = request.args.get('subdir')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-
-        command_split = ["airflow", "pause"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        command_split.append(dag_id)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("UNPAUSE_URL"))
-    @http_token_secure
-    def unpause(self):
-        logging.info("REST_API.unpause() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        subdir = request.args.get('subdir')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-
-        command_split = ["airflow", "unpause"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        command_split.append(dag_id)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("TEST_URL"))
-    @http_token_secure
-    def test(self):
-        logging.info("REST_API.test() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        task_id = request.args.get('task_id')
-        execution_date = request.args.get('execution_date')
-        subdir = request.args.get('subdir')
-        task_params = request.args.get('task_params')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-        if is_arg_not_provided(task_id):
-            return get_400_error_response(base_response, "task_id should be provided")
-        if is_arg_not_provided(execution_date):
-            return get_400_error_response(base_response, "execution_date should be provided")
-
-        command_split = ["airflow", "test"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        if request.args.get("dry_run") is not None:
-            command_split.append("--dry_run")
-        if task_params:
-            command_split.extend(["--task_params", task_params])
-        command_split.append(dag_id)
-        command_split.append(task_id)
-        command_split.append(execution_date)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    # todo: test on 1.8.0
-    @expose(url_dict.get("DAG_STATE_URL"))
-    @http_token_secure
-    def dag_state(self):
-        logging.info("REST_API.dag_state() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        execution_date = request.args.get('execution_date')
-        subdir = request.args.get('subdir')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-        if is_arg_not_provided(execution_date):
-            return get_400_error_response(base_response, "execution_date should be provided")
-
-        command_split = ["airflow", "dag_state"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        command_split.append(dag_id)
-        command_split.append(execution_date)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("RUN_URL"))
-    @http_token_secure
-    def run(self):
-        logging.info("REST_API.run() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        task_id = request.args.get('task_id')
-        execution_date = request.args.get('execution_date')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-        if is_arg_not_provided(task_id):
-            return get_400_error_response(base_response, "task_id should be provided")
-        if is_arg_not_provided(execution_date):
-            return get_400_error_response(base_response, "execution_date should be provided")
-
-        command_split = ["airflow", "run"]
-        if request.args.get('subdir') is not None:
-            command_split.extend(["--subdir", request.args.get('subdir')])
-        if request.args.get('mark_success') is not None:
-            command_split.append("--mark_success")
-        if request.args.get('pool') is not None:
-            command_split.extend(["--pool", request.args.get('pool')])
-        if request.args.get('local') is not None:
-            command_split.append("--local")
-        if request.args.get('ignore_dependencies') is not None:
-            command_split.append("--ignore_dependencies")
-        if request.args.get('ignore_first_depends_on_past') is not None:
-            command_split.append("--ignore_first_depends_on_past")
-        if request.args.get('ship_dag') is not None:
-            command_split.append("--ship_dag")
-        if request.args.get('pickle') is not None:
-            command_split.extend(["--pickle", request.args.get('pickle')])
-        command_split.append(dag_id)
-        command_split.append(task_id)
-        command_split.append(execution_date)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("LIST_TASKS_URL"))
-    @http_token_secure
-    def list_tasks(self):
-        logging.info("REST_API.list_tasks() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        subdir = request.args.get('subdir')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-
-        command_split = ["airflow", "list_tasks"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        if request.args.get('tree') is not None:
-            command_split.append("--tree")
-        command_split.append(dag_id)
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("BACKFILL_URL"))
-    @http_token_secure
-    def backfill(self):
-        logging.info("REST_API.backfill() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        task_regex = request.args.get('task_regex')
-        start_date = request.args.get('start_date')
-        end_date = request.args.get('end_date')
-        subdir = request.args.get('subdir')
-        pool = request.args.get('pool')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-
-        command_split = ["airflow", "backfill"]
-        if task_regex is not None:
-            command_split.extend(["--task_regex", task_regex])
-        if start_date is not None:
-            command_split.extend(["--start_date", start_date])
-        if end_date is not None:
-            command_split.extend(["--end_date", end_date])
-        if request.args.get('mark_success') is not None:
-            command_split.append("--mark_success")
-        if request.args.get('local') is not None:
-            command_split.append("--local")
-        if request.args.get('donot_pickle') is not None:
-            command_split.append("--donot_pickle")
-        if request.args.get('include_adhoc') is not None:
-            command_split.append("--include_adhoc")
-        if request.args.get('ignore_dependencies') is not None:
-            command_split.append("--ignore_dependencies")
-        if request.args.get('ignore_first_depends_on_past') is not None:
-            command_split.append("--ignore_first_depends_on_past")
-        if subdir is not None:
-            command_split.extend(["--subdir", subdir])
-        if pool is not None:
-            command_split.extend(["--pool", pool])
-        if request.args.get('dry_run') is not None:
-            command_split.append("--dry_run")
-        command_split.append(dag_id)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("LIST_DAGS_URL"))
-    @http_token_secure
-    def list_dags(self):
-        logging.info("REST_API.list_dags() called")
-        base_response = get_base_response()
-        subdir = request.args.get('subdir')
-
-        command_split = ["airflow", "list_dags"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        if request.args.get("report"):
-            command_split.append("--report")
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("KERBEROS_URL"))
-    @http_token_secure
-    def kerberos(self):
-        logging.info("REST_API.kerberos() called")
-        base_response = get_base_response()
-        principal = request.args.get('principal')
-        keytab = request.args.get('keytab')
-        pid = request.args.get('pid')
-        stdout = request.args.get('stdout')
-        stderr = request.args.get('stderr')
-        log_file = request.args.get('log-file')
-
-        if is_arg_not_provided(principal):
-            return get_400_error_response(base_response, "principal should be provided")
-
-        command_split = ["airflow", "kerberos"]
-        if keytab:
-            command_split.extend(["--keytab", keytab])
-        if pid:
-            command_split.extend(["--pid", pid])
-        if request.args.get("daemon"):
-            command_split.append("--daemon")
-        if stdout:
-            command_split.extend(["--stdout", stdout])
-        if stderr:
-            command_split.extend(["--stderr", stderr])
-        if log_file:
-            command_split.extend(["--log-file", log_file])
-
-        logging.info("command_split array: " + str(command_split))
-
-        airflow_cmd = " ".join(command_split)
-        exit_code = os.system(airflow_cmd)
-        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("WORKER_URL"))
-    @http_token_secure
-    def worker(self):
-        logging.info("REST_API.worker() called")
-        base_response = get_base_response()
-        queues = request.args.get('queues')
-        concurrency = request.args.get('concurrency')
-        pid = request.args.get('pid')
-        stdout = request.args.get('stdout')
-        stderr = request.args.get('stderr')
-        log_file = request.args.get('log-file')
-
-        command_split = ["airflow", "worker"]
-        if request.args.get("do_pickle"):
-            command_split.append("--do_pickle")
-        if queues:
-            command_split.extend(["--queues", queues])
-        if concurrency:
-            command_split.extend(["--concurrency", concurrency])
-        if pid:
-            command_split.extend(["--pid", pid])
-        if request.args.get("daemon"):
-            command_split.append("--daemon")
-        if stdout:
-            command_split.extend(["--stdout", stdout])
-        if stderr:
-            command_split.extend(["--stderr", stderr])
-        if log_file:
-            command_split.extend(["--log-file", log_file])
-
-        logging.info("command_split array: " + str(command_split))
-
-        airflow_cmd = " ".join(command_split)
-        exit_code = os.system(airflow_cmd)
-        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("SCHEDULER_URL"))
-    @http_token_secure
-    def scheduler(self):
-        logging.info("REST_API.scheduler() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        subdir = request.args.get('subdir')
-        run_duration = request.args.get('run-duration')
-        num_runs = request.args.get('num_runs')
-        pid = request.args.get('pid')
-        stdout = request.args.get('stdout')
-        stderr = request.args.get('stderr')
-        log_file = request.args.get('log-file')
-
-        command_split = ["airflow", "scheduler"]
-        if dag_id:
-            command_split.extend(["--dag_id", dag_id])
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        if run_duration:
-            command_split.extend(["--run-duration", run_duration])
-        if num_runs:
-            command_split.extend(["--num_runs", num_runs])
-        if request.args.get("do_pickle"):
-            command_split.append("--do_pickle")
-        if pid:
-            command_split.extend(["--pid", pid])
-        if request.args.get("daemon"):
-            command_split.append("--daemon")
-        if stdout:
-            command_split.extend(["--stdout", stdout])
-        if stderr:
-            command_split.extend(["--stderr", stderr])
-        if log_file:
-            command_split.extend(["--log-file", log_file])
-
-        logging.info("command_split array: " + str(command_split))
-
-        airflow_cmd = " ".join(command_split)
-        exit_code = os.system(airflow_cmd)
-        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("TASK_STATE_URL"))
-    @http_token_secure
-    def task_state(self):
-        logging.info("REST_API.task_state() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-        task_id = request.args.get('task_id')
-        execution_date = request.args.get('execution_date')
-        subdir = request.args.get('subdir')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-        if is_arg_not_provided(task_id):
-            return get_400_error_response(base_response, "task_id should be provided")
-        if is_arg_not_provided(execution_date):
-            return get_400_error_response(base_response, "execution_date should be provided")
-
-        command_split = ["airflow", "task_state"]
-        if subdir:
-            command_split.extend(["--subdir", subdir])
-        command_split.append(dag_id)
-        command_split.append(task_id)
-        command_split.append(execution_date)
-
-        logging.info("command_split array: " + str(command_split))
-
-        airflow_cmd = " ".join(command_split)
-        exit_code = os.system(airflow_cmd)
-        output = {"stderr": "", "stdin": "", "stdout": "exit_code: " + str(exit_code)}
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("TRIGGER_DAG_URL"))
-    @http_token_secure
-    def trigger_dag(self):
-        logging.info("REST_API.trigger_dag() called")
-        call_time = datetime.now()
-        execution_date = call_time.isoformat()
-        base_response = get_base_response(call_time=call_time)
-        dag_id = request.args.get('dag_id')
-        run_id = request.args.get('run_id') or "restapi_trig__" + execution_date
-        conf = request.args.get('conf')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-
-        command_split = ["airflow", "trigger_dag"]
-        if run_id is not None:
-            command_split.extend(["--run_id", run_id])
-        if conf is not None and conf != "":
-            command_split.extend(["--conf", conf])
-        command_split.append(dag_id)
-
-        logging.info("command_split array: " + str(command_split))
-        process = subprocess.Popen(
-            command_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()
-
-        output = self.collect_process_output(process)
-        base_response["run_id"] = run_id
-
-        return get_final_response(base_response=base_response, output=output, airflow_cmd=" ".join(command_split))
-
-    @expose(url_dict.get("REFRESH_DAG_URL"))
-    @http_token_secure
-    def refresh_dag(self):
-        logging.info("REST_API.refresh_dag() called")
-        base_response = get_base_response()
-        dag_id = request.args.get('dag_id')
-
-        if is_arg_not_provided(dag_id):
-            return get_400_error_response(base_response, "dag_id should be provided")
-        elif " " in dag_id:
-            return get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
-
-        response = urllib2.urlopen(airflow_webserver_base_url + '/admin/airflow/refresh?dag_id=' + dag_id)
-        html = response.read()  # avoid using this as the output because this will include a large HTML string
-        return get_final_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
-
     @csrf.exempt
-    @expose(url_dict.get("DEPLOY_DAG_URL"), methods=["POST"])
+    @expose('/api', methods=["GET", "POST"])
     @http_token_secure
-    def deploy_dag(self):
-        logging.info("REST_API.deploy_dag() called")
-        base_response = get_base_response()
-        # check if the post request has the file part
-        if 'dag_file' not in request.files:
-            return get_400_error_response(base_response, "dag_file should be provided")
-        dag_file = request.files['dag_file']
-        # if user does not select file, browser also submits an empty part without filename
-        if dag_file.filename == '':
-            return get_400_error_response(base_response, "dag_file should be provided")
-        if dag_file and dag_file.filename.endswith(".py"):
-            dag_file.save(os.path.join(dags_folder, dag_file.filename))
+    def api(self):
+        base_response = REST_API_Response_Util.get_base_response()
+
+        api = request.args.get('api')
+        if api is not None:
+            api = api.strip().lower()
+        logging.info("REST_API.api() called (api: " + str(api) + ")")
+
+        if self.is_arg_not_provided(api):
+            logging.warning("api argument not provided")
+            return REST_API_Response_Util.get_400_error_response(base_response, "API should be provided")
+
+        api_object = None
+        for api_object_to_check in apis:
+            if api_object_to_check["name"] == api:
+                api_object = api_object_to_check
+        if api_object is None:
+            logging.info("api '" + str(api) + "' was not found in the apis list in the REST API Plugin")
+            return REST_API_Response_Util.get_400_error_response(base_response, "API '" + str(api) + "' was not found")
+
+        missing_required_arguments = []
+        dag_id = None
+        for argument in api_object["arguments"]:
+            argument_name = argument["name"]
+            argument_value = request.args.get(argument_name)
+            if argument["required"]:
+                if self.is_arg_not_provided(argument_value):
+                    missing_required_arguments.append(argument_name)
+            if argument_name == "dag_id" and argument_value is not None:
+                dag_id = argument_value.strip()
+        if len(missing_required_arguments) > 0:
+            logging.warning("Missing required arguments: " + str(missing_required_arguments))
+            return REST_API_Response_Util.get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
+
+        if dag_id is not None and dag_id not in self.get_dagbag().dags:
+            logging.info("DAG_ID '" + str(dag_id) + "' was not found in the DagBag list '" + str(self.get_dagbag().dags) + "'")
+            return REST_API_Response_Util.get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
+
+        if api == "version":
+            final_response = self.version(base_response)
+        elif api == "rest_api_plugin_version":
+            final_response = self.rest_api_plugin_version(base_response)
+        elif api == "deploy_dag":
+            final_response = self.deploy_dag(base_response)
+        elif api == "refresh_dag":
+            final_response = self.refresh_dag(base_response)
         else:
-            return get_400_error_response(base_response, "dag_file is not a *.py file")
-        return get_final_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+            final_response = self.execute_cli(base_response, api_object)
+
+        return final_response
+
+    def execute_cli(self, base_response, api_object):
+        logging.info("Executing cli function")
+
+        largest_end_argument_value = 0
+        for argument in api_object["arguments"]:
+            if argument.get("cli_end_position") is not None and argument["cli_end_position"] > largest_end_argument_value:
+                largest_end_argument_value = argument["cli_end_position"]
+
+        airflow_cmd_split = ["airflow", api_object["name"]]
+        end_arguments = [0] * largest_end_argument_value
+        for argument in api_object["arguments"]:
+            argument_name = argument["name"]
+            argument_value = request.args.get(argument_name)
+            logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
+            if argument_value is not None:
+                if "cli_end_position" in argument:
+                    logging.info("argument['cli_end_position']: " + str(argument['cli_end_position']))
+                    end_arguments[argument["cli_end_position"]-1] = argument_value
+                else:
+                    airflow_cmd_split.extend(["--" + argument_name])
+                    if argument["form_input_type"] is not "checkbox":
+                        airflow_cmd_split.extend(argument_value.split(" "))
+            else:
+                logging.warning("argument_value is null")
+
+        airflow_cmd_split.extend(end_arguments)
+
+        if "background_mode" in api_object and api_object["background_mode"]:
+            if request.args.get("log-file") is None:
+                airflow_cmd_split.append(">> " + str(airflow_base_log_folder) + "/" + api_object["name"] + ".log")
+            airflow_cmd_split.append("&")
+
+        airflow_cmd = " ".join(airflow_cmd_split)
+        logging.info("airflow_cmd array: " + str(airflow_cmd_split))
+
+        if "background_mode" in api_object and api_object["background_mode"]:
+            output = self.execute_cli_command_background_mode(airflow_cmd)
+        else:
+            output = self.execute_cli_command(airflow_cmd_split)
+
+        if filter_loading_messages_in_cli_response:
+            output = self.filter_loading_messages(output)
+
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+
+    def version(self, base_response):
+        logging.info("Executing custom 'version' function")
+        return REST_API_Response_Util.get_200_response(base_response, airflow_version)
+
+    def rest_api_plugin_version(self, base_response):
+        logging.info("Executing custom 'rest_api_plugin_version' function")
+        return REST_API_Response_Util.get_200_response(base_response, rest_api_plugin_version)
+
+    def deploy_dag(self, base_response):
+        logging.info("Executing custom 'deploy_dag' function")
+
+        if 'dag_file' not in request.files or request.files['dag_file'].filename == '':  # check if the post request has the file part
+            logging.warning("The dag_file argument wasn't provided")
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
+        dag_file = request.files['dag_file']
+        force = True if request.form.get('force') is not None else False
+        logging.info("deploy_dag force upload: " + str(force))
+
+        if dag_file and dag_file.filename.endswith(".py"):
+            save_file_path = os.path.join(airflow_dags_folder, dag_file.filename)
+
+            if os.path.isfile(save_file_path) and not force:
+                logging.warning("File to upload already exists")
+                return REST_API_Response_Util.get_400_error_response(base_response, "The file '" + save_file_path + "' already exists on host '" + hostname + "'.")
+
+            logging.info("Saving file to '" + save_file_path + "'")
+            dag_file.save(save_file_path)
+
+        else:
+            logging.warning("deploy_dag file is not a python file")
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
+
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+
+    def refresh_dag(self, base_response):
+        logging.info("Executing custom 'refresh_dag' function")
+        dag_id = request.args.get('dag_id')
+
+        if self.is_arg_not_provided(dag_id):
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_id should be provided")
+        elif " " in dag_id:
+            return REST_API_Response_Util.get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
+
+        refresh_dag_url = str(airflow_webserver_base_url) + '/admin/airflow/refresh?dag_id=' + str(dag_id)
+        logging.info("Calling: " + str(refresh_dag_url))
+        response = urllib2.urlopen(refresh_dag_url)
+        html = response.read()  # avoid using this as the output because this will include a large HTML string
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
+
+    @staticmethod
+    def execute_cli_command_background_mode(airflow_cmd):
+        logging.info("Executing CLI Command in the Background")
+        exit_code = os.system(airflow_cmd)
+        output = REST_API.get_empty_process_output()
+        output["stdout"] = "exit_code: " + str(exit_code)
+        return output
+
+    @staticmethod
+    def execute_cli_command(airflow_cmd_split):
+        logging.info("Executing CLI Command")
+        process = subprocess.Popen(airflow_cmd_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+        return REST_API.collect_process_output(process)
+
+    @staticmethod
+    def get_empty_process_output():
+        return {
+            "stderr": "",
+            "stdin": "",
+            "stdout": ""
+        }
 
     @staticmethod
     def collect_process_output(process):
-        output = {}
+        output = REST_API.get_empty_process_output()
         if process.stderr is not None:
             output["stderr"] = ""
             for line in process.stderr.readlines():
@@ -657,6 +672,19 @@ class REST_API(BaseView):
         logging.info("RestAPI Output: " + str(output))
         return output
 
+    @staticmethod
+    def filter_loading_messages(output):
+        stdout = output["stdout"]
+        new_stdout_array = stdout.split("\n")
+        content_to_remove_greatest_index = 0
+        for index, content in enumerate(new_stdout_array):
+            if content.startswith("["):
+                content_to_remove_greatest_index = index
+        content_to_remove_greatest_index += 1
+        if len(new_stdout_array) > content_to_remove_greatest_index:
+            new_stdout_array = new_stdout_array[content_to_remove_greatest_index:]
+            output["stdout"] = "\n".join(new_stdout_array)
+        return output
 
 rest_api_view = REST_API(category="Admin", name="REST API Plugin")
 
