@@ -354,25 +354,27 @@ apis = [
         "background_mode": True,
         "arguments": []
     },
-    # { # not useable since the clear command asks for confirmation. todo: see if there is a way to get this working.
-    #     "name": "clear",
-    #     "description": "Clear a set of task instance, as if they never ran",
-    #     "airflow_version": "0.1 or greater",
-    #     "http_method": "GET",
-    #     "arguments": [
-    #         {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
-    #         {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
-    #         {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
-    #         {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
-    #         {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
-    #         {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
-    #         {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
-    #         {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False},
-    #         {"name": "only_failed", "description": "Only failed jobs", "form_input_type": "checkbox", "required": False},
-    #         {"name": "only_running", "description": "Only running jobs", "form_input_type": "checkbox", "required": False},
-    #         {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
-    #     ]
-    # },
+    {
+        "name": "clear",
+        "description": "Clear a set of task instance, as if they never ran",
+        "airflow_version": "0.1 or greater",
+        "http_method": "GET",
+        "arguments": [
+            {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True, "cli_end_position": 1},
+            {"name": "task_regex", "description": "The regex to filter specific task_ids to backfill (optional)", "form_input_type": "text", "required": False},
+            {"name": "start_date", "description": "Override start_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+            {"name": "end_date", "description": "Override end_date YYYY-MM-DD", "form_input_type": "text", "required": False},
+            {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
+            {"name": "upstream", "description": "Include upstream tasks", "form_input_type": "checkbox", "required": False},
+            {"name": "downstream", "description": "Include downstream tasks", "form_input_type": "checkbox", "required": False},
+            {"name": "only_failed", "description": "Only failed jobs", "form_input_type": "checkbox", "required": False},
+            {"name": "only_running", "description": "Only running jobs", "form_input_type": "checkbox", "required": False},
+            {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
+        ],
+        "fixed_arguments": [
+            {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False, "fixed_value": ""}
+        ],
+    },
     {
         "name": "deploy_dag",
         "description": "Deploy a new DAG File to the DAGs directory",
@@ -561,6 +563,15 @@ class REST_API(BaseView):
                         airflow_cmd_split.extend(argument_value.split(" "))
             else:
                 logging.warning("argument_value is null")
+
+        for argument in api_object.get("fixed_arguments", []):
+            argument_name = argument["name"]
+            argument_value = argument.get("fixed_value")
+            logging.info("fixed_argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
+            if argument_value is not None:
+                airflow_cmd_split.extend(["--" + argument_name])
+                if argument_value:
+                    airflow_cmd_split.extend(argument_value.split(" "))
 
         airflow_cmd_split.extend(end_arguments)
 
