@@ -127,7 +127,7 @@ apis_metadata = [
             {"name": "delete", "description": "Delete a variable", "form_input_type": "text", "required": False}
         ]
     },
-    {  # todo: test when v1.8.0 of Airflow is released
+    {
         "name": "connections",
         "description": "List/Add/Delete connections",
         "airflow_version": "1.8.0 or greater",
