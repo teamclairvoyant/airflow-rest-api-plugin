@@ -21,30 +21,34 @@ import socket
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: test remaining functions
 # todo: improve logging
-# todo: clean up functions and calling of those functions
-# todo: add comments
 # todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
 
+# Location of the REST Endpoint
+# Note: Changing this will only effect where the messages are posted to on the web interface and will not change where the endpoint actually resides
 rest_api_endpoint = "/admin/rest_api/api"
-filter_loading_messages_in_cli_response = True
+# Whether to filter the loading messages before sending the response back
+filter_loading_messages_in_cli_response = True  # todo: include this as an argument in the airflow.cfg file
 
+# Getting Versions and Global variables
 hostname = socket.gethostname()
 airflow_version = airflow.__version__
 rest_api_plugin_version = __version__
+
+# Getting configurations from airflow.cfg file
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
-airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
+airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"  # todo: include this as an argument in the airflow.cfg file
 airflow_expected_http_token = None
 if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
     airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
 
+# Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 """
-API OBJECT:
+Metadata that defines a single API:
 {
     "name": "{string}",                     # Name of the API (cli command to be executed)
     "description": "{string}",              # Description of the API
@@ -59,11 +63,29 @@ API OBJECT:
             "required": {boolean},          # Whether the argument is required upon submission
             "cli_end_position": {int}       # In the case with a CLI command that the arguments value should be appended on to the end (for example: airflow trigger_dag some_dag_id), this is the position that the argument should be provided in the CLI command. (Optional)
         }
+    ],
+    "fixed_arguments": [                    # List of arguments that will always be used by the API endpoint and can't be changed
+        {
+            "name": "{string}",             # Name of the argument
+            "description": "{string}",      # Description of the argument
+            "fixed_value": "{string}"       # Fixed value that will always be used
+        }
+    ],
+    "post_arguments": [                     # List of arguments that can be provided in the POST body to the API
+        {
+            "name": "{string}",             # Name of the argument
+            "description": "{string}",      # Description of the argument
+            "form_input_type": "{string}",  # Type of input to use on the Admin page for the argument
+            "required": {boolean},          # Whether the argument is required upon submission
+        }
     ]
 },
 """
 
-apis = [
+# Metadata about the APIs and how to call them. Representing them like this allows us to dynamically generate the APIs
+# in the admin page and dynamically execute them. This also allows us to easily add new ones.
+# API Object definition is described in the comment block above.
+apis_metadata = [
     {
         "name": "version",
         "description": "Displays the version of Airflow you're using",
@@ -372,7 +394,7 @@ apis = [
             {"name": "exclude_subdags", "description": "Exclude subdags", "form_input_type": "checkbox", "required": False}
         ],
         "fixed_arguments": [
-            {"name": "no_confirm", "description": "Do not request confirmation", "form_input_type": "checkbox", "required": False, "fixed_value": ""}
+            {"name": "no_confirm", "description": "Do not request confirmation", "fixed_value": ""}
         ],
     },
     {
@@ -400,9 +422,11 @@ apis = [
 ]
 
 
+# Function used to secure the REST ENDPOINT
 def http_token_secure(func):
     def secure_check(arg):
         logging.info("Rest_API_Plugin.http_token_secure() called")
+        # Check if the airflow_expected_http_token variable is not none from configurations. This means authentication is enabled.
         if airflow_expected_http_token:
             logging.info("Performing Token Authentication")
             if request.headers.get(airflow_rest_api_plugin_http_token_header_name, None) != airflow_expected_http_token:
@@ -415,8 +439,10 @@ def http_token_secure(func):
     return secure_check
 
 
+# Utility for creating the REST Responses
 class REST_API_Response_Util():
 
+    # Gets the Base Response object with all required response fields included. To be used at the beginning of the REST Call.
     @staticmethod
     def get_base_response(status="OK", http_response_code=200, call_time=datetime.now(), include_arguments=True):
         base_response = {"status": status, "http_response_code": http_response_code, "call_time": call_time}
@@ -424,6 +450,7 @@ class REST_API_Response_Util():
             base_response["arguments"] = request.args
         return base_response
 
+    # Finalize the Base Response with additional data
     @staticmethod
     def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None):
         final_response = base_response
@@ -436,81 +463,99 @@ class REST_API_Response_Util():
             final_response["http_response_code"] = http_response_code
         return jsonify(final_response)
 
+    # Set the Base Response as a 200 HTTP Response object
     @staticmethod
     def get_200_response(base_response, output=None, airflow_cmd=None):
         logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
 
+    # Set the Base Response and an Error
     @staticmethod
     def _get_error_response(base_response, error_code, output=None):
         base_response["status"] = "ERROR"
         return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, http_response_code=error_code), error_code
 
+    # Set the Base Response as a 403 HTTP Response object
     @staticmethod
     def get_403_error_response(base_response, output=None):
         logging.warning("Returning a 403 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 403, output)
 
+    # Set the Base Response as a 400 HTTP Response object
     @staticmethod
     def get_400_error_response(base_response, output=None):
         logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 400, output)
 
 
+# REST_API View which extends the flask_admin BaseView
 class REST_API(BaseView):
 
+    # Checks a string object to see if it is none or empty so we can determine if an argument (passed to the rest api) is provided
     @staticmethod
     def is_arg_not_provided(arg):
         return arg is None or arg == ""
 
+    # Get the DagBag which has a list of all the current Dags
     @staticmethod
     def get_dagbag():
         return DagBag()
 
+    # '/' Endpoint where the Admin page is which allows you to view the APIs available and trigger them
     @expose('/')
     def index(self):
         logging.info("REST_API.index() called")
+
+        # get the information that we want to display on the page regarding the dags that are available
         dagbag = self.get_dagbag()
         dags = []
         for dag_id in dagbag.dags:
             orm_dag = DagModel.get_current(dag_id)
-            dags.append({"dag_id": dag_id, "is_active": (not orm_dag.is_paused) if orm_dag is not None else False})
+            dags.append({
+                "dag_id": dag_id,
+                "is_active": (not orm_dag.is_paused) if orm_dag is not None else False
+            })
 
         return self.render("rest_api_plugin/index.html",
                            dags=dags,
                            airflow_webserver_base_url=airflow_webserver_base_url,
                            rest_api_endpoint=rest_api_endpoint,
-                           apis=apis,
+                           apis_metadata=apis_metadata,
                            airflow_version=airflow_version,
                            rest_api_plugin_version=rest_api_plugin_version
                            )
 
-    @csrf.exempt
+    # '/api' REST Endpoint where API requests should all come in
+    @csrf.exempt  # Exempt the CSRF token
     @expose('/api', methods=["GET", "POST"])
-    @http_token_secure
+    @http_token_secure  # On each request,
     def api(self):
         base_response = REST_API_Response_Util.get_base_response()
 
+        # Get the api that you want to execute
         api = request.args.get('api')
         if api is not None:
             api = api.strip().lower()
         logging.info("REST_API.api() called (api: " + str(api) + ")")
 
+        # Validate that the API is provided
         if self.is_arg_not_provided(api):
             logging.warning("api argument not provided")
             return REST_API_Response_Util.get_400_error_response(base_response, "API should be provided")
 
-        api_object = None
-        for api_object_to_check in apis:
-            if api_object_to_check["name"] == api:
-                api_object = api_object_to_check
-        if api_object is None:
+        # Get the api_metadata from the api object list that correcsponds to the api we want to run to get the metadata.
+        api_metadata = None
+        for test_api_metadata in apis_metadata:
+            if test_api_metadata["name"] == api:
+                api_metadata = test_api_metadata
+        if api_metadata is None:
             logging.info("api '" + str(api) + "' was not found in the apis list in the REST API Plugin")
             return REST_API_Response_Util.get_400_error_response(base_response, "API '" + str(api) + "' was not found")
 
+        # check if all the required arguments are provided
         missing_required_arguments = []
         dag_id = None
-        for argument in api_object["arguments"]:
+        for argument in api_metadata["arguments"]:
             argument_name = argument["name"]
             argument_value = request.args.get(argument_name)
             if argument["required"]:
@@ -522,10 +567,13 @@ class REST_API(BaseView):
             logging.warning("Missing required arguments: " + str(missing_required_arguments))
             return REST_API_Response_Util.get_400_error_response(base_response, "The argument(s) " + str(missing_required_arguments) + " are required")
 
-        if dag_id is not None and dag_id not in self.get_dagbag().dags:
-            logging.info("DAG_ID '" + str(dag_id) + "' was not found in the DagBag list '" + str(self.get_dagbag().dags) + "'")
+        # Check to make sure that the DAG you're referring to, already exists.
+        dag_bag = self.get_dagbag()
+        if dag_id is not None and dag_id not in dag_bag.dags:
+            logging.info("DAG_ID '" + str(dag_id) + "' was not found in the DagBag list '" + str(dag_bag.dags) + "'")
             return REST_API_Response_Util.get_400_error_response(base_response, "The DAG ID '" + str(dag_id) + "' does not exist")
 
+        # Deciding which function to use based off the API object that was requested. Some functions are custom and need to be manually routed to.
         if api == "version":
             final_response = self.version(base_response)
         elif api == "rest_api_plugin_version":
@@ -535,25 +583,32 @@ class REST_API(BaseView):
         elif api == "refresh_dag":
             final_response = self.refresh_dag(base_response)
         else:
-            final_response = self.execute_cli(base_response, api_object)
+            final_response = self.execute_cli(base_response, api_metadata)
 
         return final_response
 
-    def execute_cli(self, base_response, api_object):
+    # General execution of a CLI command
+    # A command will be assembled and then passed to the OS as a commandline function and the results will be returned
+    def execute_cli(self, base_response, api_metadata):
         logging.info("Executing cli function")
 
+        # getting the largest cli_end_position in the api_metadata object so that the cli function can be assembled
         largest_end_argument_value = 0
-        for argument in api_object["arguments"]:
+        for argument in api_metadata.get("arguments", []):
             if argument.get("cli_end_position") is not None and argument["cli_end_position"] > largest_end_argument_value:
                 largest_end_argument_value = argument["cli_end_position"]
 
-        airflow_cmd_split = ["airflow", api_object["name"]]
+        # starting to create the airflow_cmd function
+        airflow_cmd_split = ["airflow", api_metadata["name"]]
+
+        # appending arguments to the airflow_cmd_split array and setting arguments aside in the end_arguments array to be appended onto the end of airflow_cmd_split
         end_arguments = [0] * largest_end_argument_value
-        for argument in api_object["arguments"]:
+        for argument in api_metadata["arguments"]:
             argument_name = argument["name"]
             argument_value = request.args.get(argument_name)
             logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
             if argument_value is not None:
+                # if the argument should be appended onto the end, find the position and add it to the end_arguments array
                 if "cli_end_position" in argument:
                     logging.info("argument['cli_end_position']: " + str(argument['cli_end_position']))
                     end_arguments[argument["cli_end_position"]-1] = argument_value
@@ -564,43 +619,58 @@ class REST_API(BaseView):
             else:
                 logging.warning("argument_value is null")
 
-        for argument in api_object.get("fixed_arguments", []):
-            argument_name = argument["name"]
-            argument_value = argument.get("fixed_value")
-            logging.info("fixed_argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
-            if argument_value is not None:
-                airflow_cmd_split.extend(["--" + argument_name])
-                if argument_value:
-                    airflow_cmd_split.extend(argument_value.split(" "))
+        # appending fixed arguments that should always be provided to the APIs
+        for fixed_argument in api_metadata.get("fixed_arguments", []):
+            fixed_argument_name = fixed_argument["name"]
+            fixed_argument_value = fixed_argument.get("fixed_value")
+            logging.info("fixed_argument_name: " + str(fixed_argument_name) + ", fixed_argument_value: " + str(fixed_argument_value))
+            if fixed_argument_value is not None:
+                airflow_cmd_split.extend(["--" + fixed_argument_name])
+                if fixed_argument_value:
+                    airflow_cmd_split.extend(fixed_argument_value.split(" "))
 
+        # appending the end_arguments to the very end
         airflow_cmd_split.extend(end_arguments)
 
-        if "background_mode" in api_object and api_object["background_mode"]:
+        run_api_in_background_mode = "background_mode" in api_metadata and api_metadata["background_mode"]
+
+        # handling the case where the process should be ran in the background
+        if run_api_in_background_mode:
+            # if a log file is provided, then that should be used to dump the output of the call
             if request.args.get("log-file") is None:
-                airflow_cmd_split.append(">> " + str(airflow_base_log_folder) + "/" + api_object["name"] + ".log")
+                airflow_cmd_split.append(">> " + str(airflow_base_log_folder) + "/" + api_metadata["name"] + ".log")
+            # appending a '&' character to run the process in the background
             airflow_cmd_split.append("&")
 
+        # joining all the individual arguments and components into a single string
         airflow_cmd = " ".join(airflow_cmd_split)
-        logging.info("airflow_cmd array: " + str(airflow_cmd_split))
 
-        if "background_mode" in api_object and api_object["background_mode"]:
+        logging.info("airflow_cmd array: " + str(airflow_cmd_split))
+        logging.info("airflow_cmd: " + str(airflow_cmd))
+
+        # execute the airflow command a certain way if its meant to be ran in the background
+        if run_api_in_background_mode:
             output = self.execute_cli_command_background_mode(airflow_cmd)
         else:
             output = self.execute_cli_command(airflow_cmd_split)
 
+        # if desired, filter out the loading messages to reduce the noise in the output
         if filter_loading_messages_in_cli_response:
             output = self.filter_loading_messages(output)
 
         return REST_API_Response_Util.get_200_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
 
+    # Custom function for the version API
     def version(self, base_response):
         logging.info("Executing custom 'version' function")
         return REST_API_Response_Util.get_200_response(base_response, airflow_version)
 
+    # Custom function for the rest_api_plugin_version API
     def rest_api_plugin_version(self, base_response):
         logging.info("Executing custom 'rest_api_plugin_version' function")
         return REST_API_Response_Util.get_200_response(base_response, rest_api_plugin_version)
 
+    # Custom Function for the deploy_dag API
     def deploy_dag(self, base_response):
         logging.info("Executing custom 'deploy_dag' function")
 
@@ -611,9 +681,11 @@ class REST_API(BaseView):
         force = True if request.form.get('force') is not None else False
         logging.info("deploy_dag force upload: " + str(force))
 
+        # make sure that the dag_file is a python script
         if dag_file and dag_file.filename.endswith(".py"):
             save_file_path = os.path.join(airflow_dags_folder, dag_file.filename)
 
+            # Check if the file already exists.
             if os.path.isfile(save_file_path) and not force:
                 logging.warning("File to upload already exists")
                 return REST_API_Response_Util.get_400_error_response(base_response, "The file '" + save_file_path + "' already exists on host '" + hostname + "'.")
@@ -622,11 +694,13 @@ class REST_API(BaseView):
             dag_file.save(save_file_path)
 
         else:
-            logging.warning("deploy_dag file is not a python file")
+            logging.warning("deploy_dag file is not a python file. It does not end with a .py.")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
 
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
 
+    # Custom Function for the refresh_dag API
+    # This will call the '/admin/airflow/refresh' end point that already exists in Airflow
     def refresh_dag(self, base_response):
         logging.info("Executing custom 'refresh_dag' function")
         dag_id = request.args.get('dag_id')
@@ -642,6 +716,7 @@ class REST_API(BaseView):
         html = response.read()  # avoid using this as the output because this will include a large HTML string
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
+    # Executes the airflow command passed into it in the background so the function isn't tied to the webserver process
     @staticmethod
     def execute_cli_command_background_mode(airflow_cmd):
         logging.info("Executing CLI Command in the Background")
@@ -650,6 +725,7 @@ class REST_API(BaseView):
         output["stdout"] = "exit_code: " + str(exit_code)
         return output
 
+    # General execution of the airflow command passed to it and returns the response
     @staticmethod
     def execute_cli_command(airflow_cmd_split):
         logging.info("Executing CLI Command")
@@ -657,6 +733,7 @@ class REST_API(BaseView):
         process.wait()
         return REST_API.collect_process_output(process)
 
+    # gets and empty object that has all the fields a CLI function would have in it.
     @staticmethod
     def get_empty_process_output():
         return {
@@ -665,6 +742,7 @@ class REST_API(BaseView):
             "stdout": ""
         }
 
+    # Get the output of the CLI process and package it in a dict
     @staticmethod
     def collect_process_output(process):
         output = REST_API.get_empty_process_output()
@@ -683,6 +761,11 @@ class REST_API(BaseView):
         logging.info("RestAPI Output: " + str(output))
         return output
 
+    # Filtering out logging statements from the standard output
+    # Content like:
+    #
+    # [2017-04-19 10:04:34,927] {__init__.py:36} INFO - Using executor CeleryExecutor
+    # [2017-04-19 10:04:35,926] {models.py:154} INFO - Filling up the DagBag from /Users/...
     @staticmethod
     def filter_loading_messages(output):
         stdout = output["stdout"]
@@ -697,8 +780,10 @@ class REST_API(BaseView):
             output["stdout"] = "\n".join(new_stdout_array)
         return output
 
+# Creating View to be used by Plugin
 rest_api_view = REST_API(category="Admin", name="REST API Plugin")
 
+# Creating Blueprint
 rest_api_bp = Blueprint(
     "rest_api_bp",
     __name__,
@@ -708,6 +793,7 @@ rest_api_bp = Blueprint(
 )
 
 
+# Creating the REST_API_Plugin which extends the AirflowPlugin so its imported into Airflow
 class REST_API_Plugin(AirflowPlugin):
     name = "rest_api"
     operators = []

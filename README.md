@@ -639,7 +639,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
 
-##### clear - NOTE: Currently Not Supported as the CLI asks for confirmation which the plugin doesn't handle.
+##### clear
 
 Clear a set of task instance, as if they never ran
 
