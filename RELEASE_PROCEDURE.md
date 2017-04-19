@@ -10,6 +10,8 @@ This document describes the branching procedure and how to create new releases o
 2. Push all your changes into the Branch
     * For Pull Requests from External Contributors, those changes will also go into the Release Branch and not the Master
 3. Create a Pull Request to merge the changes from the Branch into Master
+    * Pull Request Name: v{VERSION} branch merge
+    * Include in the description all the changes that were made in the release
 4. Admin: Review the changes and approve the Pull Request 
     * This will merge the changes into Master
 5. Create a Release from Master
