@@ -22,10 +22,12 @@ The plugin also includes other custom REST APIs.
         * v0.0.1
         * v0.0.2
         * v1.0.0
+        * v1.0.1
     * Branches Available:
         * master
         * v0.0.2-branch 
         * v1.0.0-branch 
+        * v1.0.1-branch 
     * ULR to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
@@ -637,7 +639,7 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
 
-##### clear - NOTE: Currently Not Supported as the CLI asks for confirmation which the plugin doesn't handle.
+##### clear
 
 Clear a set of task instance, as if they never ran
 
