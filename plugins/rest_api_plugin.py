@@ -710,12 +710,16 @@ class REST_API(BaseView):
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
 
         warning = None
+        # if both the pause and unpause options are provided then skip the pausing and unpausing phase
         if not (pause and unpause):
             if pause or unpause:
                 try:
+                    # import the DAG file that was uploaded so that we can get the DAG_ID to execute the command to pause or unpause it
                     import imp
                     dag_file = imp.load_source('module.name', save_file_path)
                     dag_id = dag_file.dag.dag_id
+
+                    # run the pause or unpause cli command
                     airflow_cmd_split = []
                     if pause:
                         airflow_cmd_split = ["airflow", "pause", dag_id]
