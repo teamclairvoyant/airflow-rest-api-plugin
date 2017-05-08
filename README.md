@@ -691,6 +691,10 @@ POST Body Arguments:
 
 * force (optional) - boolean - Whether to forcefully upload the file if the file already exists or not
 
+* pause (optional) - boolean - The DAG will be forced to be paused when created and override the 'dags_are_paused_at_creation' config.
+
+* unpause (optional) - boolean - The DAG will be forced to be unpaused when created and override the 'dags_are_paused_at_creation' config.
+
 Examples:
 
 Header: multipart/form-data
@@ -725,10 +729,12 @@ The API's will all return a common response object. It is a JSON object with the
 
 * airflow_cmd           - String    - Airflow CLI command being ran on the local machine
 * arguments             - Dict      - Dictionary with the arguments you passed in and their values
+* post_arguments        - Dict      - Dictionary with the post body arguments you passed in and their values
 * call_time             - Timestamp - Time in which the request was received by the server 
 * output                - String    - Text output from calling the CLI function
 * response_time         - Timestamp - Time in which the response was sent back by the server 
 * status                - String    - Response Status of the call. (possible values: OK, ERROR)
+* warning               - String    - A Warning message that's sent back from the API 
 * http_response_code    - Integer   - HTTP Response code 
 
 **Sample** (Result of calling the versions endpoint)

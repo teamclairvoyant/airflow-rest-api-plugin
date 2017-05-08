@@ -407,7 +407,9 @@ apis_metadata = [
         "arguments": [],
         "post_arguments": [
             {"name": "dag_file", "description": "Python file to upload and deploy", "form_input_type": "file", "required": True},
-            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False}
+            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False},
+            {"name": "pause", "description": "The DAG will be forced to be paused when created and override the 'dags_are_paused_at_creation' config.", "form_input_type": "checkbox", "required": False},
+            {"name": "unpause", "description": "The DAG will be forced to be unpaused when created and override the 'dags_are_paused_at_creation' config.", "form_input_type": "checkbox", "required": False}
         ]
     },
     {
@@ -448,11 +450,12 @@ class REST_API_Response_Util():
         base_response = {"status": status, "http_response_code": http_response_code, "call_time": call_time}
         if include_arguments:
             base_response["arguments"] = request.args
+            base_response["post_arguments"] = request.form
         return base_response
 
     # Finalize the Base Response with additional data
     @staticmethod
-    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None):
+    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None, warning=None):
         final_response = base_response
         final_response["response_time"] = datetime.now()
         if output:
@@ -461,13 +464,15 @@ class REST_API_Response_Util():
             final_response["airflow_cmd"] = airflow_cmd
         if http_response_code:
             final_response["http_response_code"] = http_response_code
+        if warning:
+            final_response["warning"] = warning
         return jsonify(final_response)
 
     # Set the Base Response as a 200 HTTP Response object
     @staticmethod
-    def get_200_response(base_response, output=None, airflow_cmd=None):
+    def get_200_response(base_response, output=None, airflow_cmd=None, warning=None):
         logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
-        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd, warning=warning)
 
     # Set the Base Response and an Error
     @staticmethod
@@ -678,8 +683,15 @@ class REST_API(BaseView):
             logging.warning("The dag_file argument wasn't provided")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
+
         force = True if request.form.get('force') is not None else False
         logging.info("deploy_dag force upload: " + str(force))
+
+        pause = True if request.form.get('pause') is not None else False
+        logging.info("deploy_dag in pause state: " + str(pause))
+
+        unpause = True if request.form.get('unpause') is not None else False
+        logging.info("deploy_dag in unpause state: " + str(unpause))
 
         # make sure that the dag_file is a python script
         if dag_file and dag_file.filename.endswith(".py"):
@@ -697,7 +709,27 @@ class REST_API(BaseView):
             logging.warning("deploy_dag file is not a python file. It does not end with a .py.")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
 
-        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+        warning = None
+        if not (pause and unpause):
+            if pause or unpause:
+                try:
+                    import imp
+                    dag_file = imp.load_source('module.name', save_file_path)
+                    dag_id = dag_file.dag.dag_id
+                    airflow_cmd_split = []
+                    if pause:
+                        airflow_cmd_split = ["airflow", "pause", dag_id]
+                    if unpause:
+                        airflow_cmd_split = ["airflow", "unpause", dag_id]
+                    cli_output = self.execute_cli_command(airflow_cmd_split)
+                except Exception, e:
+                    warning = "Failed to set the state (pause, unpause) of the DAG: " + str(e)
+                    logging.warning(warning)
+        else:
+            warning = "Both options pause and unpause were given. Skipping setting the state (pause, unpause) of the DAG."
+            logging.warning(warning)
+
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file), warning=warning)
 
     # Custom Function for the refresh_dag API
     # This will call the '/admin/airflow/refresh' end point that already exists in Airflow
