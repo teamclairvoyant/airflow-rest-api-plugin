@@ -67,11 +67,15 @@ The REST API client supports a simple token based authentication mechanism where
 
     a. Under the [webserver] section add the following content:
     
-        # HTTP Token to be used for authenticating REST calls for the REST API Plugin
+        # HTTP Header Name to be used for authenticating REST calls for the REST API Plugin
+        # DEFAULT: 'rest_api_plugin_http_token'
+        rest_api_plugin_http_token_header_name = rest_api_plugin_http_token
+    
+        # HTTP Token  to be used for authenticating REST calls for the REST API Plugin
         # Comment this out to disable Authentication
-        rest_api_plugin_expected_http_token = {HTTP_TOKEN_PLACEHOLDER}
+        rest_api_plugin_expected_http_token = changeme
         
-2. Fill in the {HTTP_TOKEN_PLACEHOLDER} with your desired token people should pass 
+2. Change the value of 'rest_api_plugin_expected_http_token' to the desired token people should pass 
 
 3. Restart the Airflow Web Server
 
@@ -81,7 +85,7 @@ Once the steps above have been followed to enable authentication, users will nee
 
 **Example CURL Command:**
 
-curl --header "rest_api_plugin_http_token: {HTTP_TOKEN_PLACEHOLDER}" http://{HOST}:{PORT}/admin/rest_api/api?api=version
+curl --header "rest_api_plugin_http_token: changeme" http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
 #### What happens when you fail to Authenticate?
 

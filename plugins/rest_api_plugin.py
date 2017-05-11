@@ -21,6 +21,7 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 """
 
 # todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
+# todo: move configurations into a dedicated section in airflow.cfg file?
 
 # Location of the REST Endpoint
 # Note: Changing this will only effect where the messages are posted to on the web interface and will not change where the endpoint actually resides
@@ -37,7 +38,9 @@ rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
-airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"  # todo: include this as an argument in the airflow.cfg file
+airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
+if configuration.has_option("webserver", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME"):
+    airflow_rest_api_plugin_http_token_header_name = configuration.get("webserver", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME")
 airflow_expected_http_token = None
 if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
     airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
