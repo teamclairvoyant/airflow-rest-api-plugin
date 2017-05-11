@@ -8,6 +8,11 @@ A plugin for [Apache Airflow](https://github.com/apache/incubator-airflow) that 
 
 The plugin also includes other custom REST APIs.
 
+### System Requirements
+
+* Airflow Versions
+    * 1.X
+
 ### Deployment Instructions
 
 1. Create the plugins folder if it doesn't exist. 
