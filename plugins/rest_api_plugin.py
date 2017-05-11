@@ -13,7 +13,6 @@ from datetime import datetime
 import airflow
 import logging
 import subprocess
-import urllib2
 import os
 import socket
 
@@ -21,7 +20,6 @@ import socket
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: improve logging
 # todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
 
 # Location of the REST Endpoint
@@ -471,7 +469,7 @@ class REST_API_Response_Util():
     # Set the Base Response as a 200 HTTP Response object
     @staticmethod
     def get_200_response(base_response, output=None, airflow_cmd=None, warning=None):
-        logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
+        logging.info("Returning a 200 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd, warning=warning)
 
     # Set the Base Response and an Error
@@ -480,17 +478,23 @@ class REST_API_Response_Util():
         base_response["status"] = "ERROR"
         return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, http_response_code=error_code), error_code
 
+    # Set the Base Response as a 400 HTTP Response object
+    @staticmethod
+    def get_400_error_response(base_response, output=None):
+        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 400, output)
+
     # Set the Base Response as a 403 HTTP Response object
     @staticmethod
     def get_403_error_response(base_response, output=None):
         logging.warning("Returning a 403 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 403, output)
 
-    # Set the Base Response as a 400 HTTP Response object
+    # Set the Base Response as a 500 HTTP Response object
     @staticmethod
-    def get_400_error_response(base_response, output=None):
-        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
-        return REST_API_Response_Util._get_error_response(base_response, 400, output)
+    def get_500_error_response(base_response, output=None):
+        logging.warning("Returning a 500 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 500, output)
 
 
 # REST_API View which extends the flask_admin BaseView
@@ -736,20 +740,26 @@ class REST_API(BaseView):
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file), warning=warning)
 
     # Custom Function for the refresh_dag API
-    # This will call the '/admin/airflow/refresh' end point that already exists in Airflow
+    # This will call the direct function corresponding to the web endpoint '/admin/airflow/refresh' that already exists in Airflow
     def refresh_dag(self, base_response):
         logging.info("Executing custom 'refresh_dag' function")
         dag_id = request.args.get('dag_id')
-
+        logging.info("dag_id to refresh: '" + str(dag_id) + "'")
         if self.is_arg_not_provided(dag_id):
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_id should be provided")
         elif " " in dag_id:
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
 
-        refresh_dag_url = str(airflow_webserver_base_url) + '/admin/airflow/refresh?dag_id=' + str(dag_id)
-        logging.info("Calling: " + str(refresh_dag_url))
-        response = urllib2.urlopen(refresh_dag_url)
-        html = response.read()  # avoid using this as the output because this will include a large HTML string
+        try:
+            from airflow.www.views import Airflow
+            # NOTE: The request argument 'dag_id' is required for the refresh() function to get the dag_id
+            refresh_result = Airflow().refresh()
+            logging.info("Refresh Result: " + str(refresh_result))
+        except Exception, e:
+            error_message = "An error occurred while trying to Refresh the DAG '" + str(dag_id) + "': " + str(e)
+            logging.error(error_message)
+            return REST_API_Response_Util.get_500_error_response(base_response, error_message)
+
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     # Executes the airflow command passed into it in the background so the function isn't tied to the webserver process
