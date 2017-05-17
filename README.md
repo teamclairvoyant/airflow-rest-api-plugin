@@ -8,6 +8,11 @@ A plugin for [Apache Airflow](https://github.com/apache/incubator-airflow) that 
 
 The plugin also includes other custom REST APIs.
 
+### System Requirements
+
+* Airflow Versions
+    * 1.X
+
 ### Deployment Instructions
 
 1. Create the plugins folder if it doesn't exist. 
@@ -23,11 +28,13 @@ The plugin also includes other custom REST APIs.
         * v0.0.2
         * v1.0.0
         * v1.0.1
+        * v1.0.2
     * Branches Available:
         * master
         * v0.0.2-branch 
         * v1.0.0-branch 
         * v1.0.1-branch 
+        * v1.0.2-branch 
     * ULR to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
@@ -44,11 +51,30 @@ The plugin also includes other custom REST APIs.
 
     * This is required for the API admin page to display the correct host
     
-5. Setup Authentication for Security (Optional)
+5. (Optional) Append the following content to the end of the {AIRFLOW_HOME}/airflow.cfg file to give you control over execution:
 
-    a. Follow the "Enabling Authentication" section bellow.
+        [rest_api_plugin]
+        
+        # Filters out loading messages from the standard out 
+        # DEFAULT: True
+        filter_loading_messages_in_cli_response = True
+        
+        # HTTP Header Name to be used for authenticating REST calls for the REST API Plugin
+        # DEFAULT: 'rest_api_plugin_http_token'
+        #rest_api_plugin_http_token_header_name = rest_api_plugin_http_token
+           
+        # HTTP Token  to be used for authenticating REST calls for the REST API Plugin
+        # DEFAULT: None
+        # Comment this out to disable Authentication
+        #rest_api_plugin_expected_http_token = changeme
 
-5. Restart the Airflow Web Server
+6. (Optional) Setup Authentication for Security
+
+    a. Note: Requires that step #5 above be completed.
+
+    b. Follow the "Enabling Authentication" section bellow.
+
+7. Restart the Airflow Web Server
 
 ### Enabling Authentication
 
@@ -58,15 +84,17 @@ The REST API client supports a simple token based authentication mechanism where
 
 1. Edit your {AIRFLOW_HOME}/airflow.cfg file
 
-    a. Under the [webserver] section add the following content:
+    a. Under the [rest_api_plugin] section you added in step #5 of the "Deployment Instructions", uncomment the following configs:
     
-        # HTTP Token to be used for authenticating REST calls for the REST API Plugin
-        # Comment this out to disable Authentication
-        rest_api_plugin_expected_http_token = {HTTP_TOKEN_PLACEHOLDER}
-        
-2. Fill in the {HTTP_TOKEN_PLACEHOLDER} with your desired token people should pass 
+        rest_api_plugin_http_token_header_name = rest_api_plugin_http_token
+    
+        rest_api_plugin_expected_http_token = changeme
 
-3. Restart the Airflow Web Server
+2. (Optional) Update the 'rest_api_plugin_http_token_header_name' to the desired value 
+        
+3. Change the value of 'rest_api_plugin_expected_http_token' to the desired token people should pass 
+
+4. Restart the Airflow Web Server
 
 #### Authenticating
 
@@ -74,7 +102,7 @@ Once the steps above have been followed to enable authentication, users will nee
 
 **Example CURL Command:**
 
-curl --header "rest_api_plugin_http_token: {HTTP_TOKEN_PLACEHOLDER}" http://{HOST}:{PORT}/admin/rest_api/api?api=version
+curl --header "rest_api_plugin_http_token: changeme" http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
 #### What happens when you fail to Authenticate?
 
@@ -689,6 +717,10 @@ POST Body Arguments:
 
 * force (optional) - boolean - Whether to forcefully upload the file if the file already exists or not
 
+* pause (optional) - boolean - The DAG will be forced to be paused when created and override the 'dags_are_paused_at_creation' config.
+
+* unpause (optional) - boolean - The DAG will be forced to be unpaused when created and override the 'dags_are_paused_at_creation' config.
+
 Examples:
 
 Header: multipart/form-data
@@ -723,10 +755,12 @@ The API's will all return a common response object. It is a JSON object with the
 
 * airflow_cmd           - String    - Airflow CLI command being ran on the local machine
 * arguments             - Dict      - Dictionary with the arguments you passed in and their values
+* post_arguments        - Dict      - Dictionary with the post body arguments you passed in and their values
 * call_time             - Timestamp - Time in which the request was received by the server 
 * output                - String    - Text output from calling the CLI function
 * response_time         - Timestamp - Time in which the response was sent back by the server 
 * status                - String    - Response Status of the call. (possible values: OK, ERROR)
+* warning               - String    - A Warning message that's sent back from the API 
 * http_response_code    - Integer   - HTTP Response code 
 
 **Sample** (Result of calling the versions endpoint)

@@ -1,5 +1,5 @@
 __author__ = 'robertsanders'
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
@@ -13,7 +13,6 @@ from datetime import datetime
 import airflow
 import logging
 import subprocess
-import urllib2
 import os
 import socket
 
@@ -21,14 +20,11 @@ import socket
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
 
-# todo: improve logging
 # todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
 
 # Location of the REST Endpoint
 # Note: Changing this will only effect where the messages are posted to on the web interface and will not change where the endpoint actually resides
 rest_api_endpoint = "/admin/rest_api/api"
-# Whether to filter the loading messages before sending the response back
-filter_loading_messages_in_cli_response = True  # todo: include this as an argument in the airflow.cfg file
 
 # Getting Versions and Global variables
 hostname = socket.gethostname()
@@ -39,13 +35,20 @@ rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
-airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"  # todo: include this as an argument in the airflow.cfg file
-airflow_expected_http_token = None
-if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
-    airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
+airflow_rest_api_plugin_http_token_header_name = configuration.get("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") else "rest_api_plugin_http_token"
+airflow_expected_http_token = configuration.get("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") else None
+filter_loading_messages_in_cli_response = configuration.get("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") if configuration.has_option("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") else "True"
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+logging.info("Initializing Airflow REST API Plugin with configs:")
+logging.info("\tairflow_webserver_base_url: " + str(airflow_webserver_base_url))
+logging.info("\tairflow_base_log_folder: " + str(airflow_base_log_folder))
+logging.info("\tairflow_dags_folder: " + str(airflow_dags_folder))
+logging.info("\tairflow_rest_api_plugin_http_token_header_name: " + str(airflow_rest_api_plugin_http_token_header_name))
+logging.info("\tairflow_expected_http_token: OMITTED FOR SECURITY")
+logging.info("\tfilter_loading_messages_in_cli_response: " + str(filter_loading_messages_in_cli_response))
 
 """
 Metadata that defines a single API:
@@ -173,7 +176,7 @@ apis_metadata = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {
+    {   # todo: should print out the run id
         "name": "trigger_dag",
         "description": "Trigger a DAG run",
         "airflow_version": "1.6.0 or greater",
@@ -407,7 +410,9 @@ apis_metadata = [
         "arguments": [],
         "post_arguments": [
             {"name": "dag_file", "description": "Python file to upload and deploy", "form_input_type": "file", "required": True},
-            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False}
+            {"name": "force", "description": "Whether to forcefully upload the file if the file already exists or not", "form_input_type": "checkbox", "required": False},
+            {"name": "pause", "description": "The DAG will be forced to be paused when created and override the 'dags_are_paused_at_creation' config.", "form_input_type": "checkbox", "required": False},
+            {"name": "unpause", "description": "The DAG will be forced to be unpaused when created and override the 'dags_are_paused_at_creation' config.", "form_input_type": "checkbox", "required": False}
         ]
     },
     {
@@ -448,11 +453,12 @@ class REST_API_Response_Util():
         base_response = {"status": status, "http_response_code": http_response_code, "call_time": call_time}
         if include_arguments:
             base_response["arguments"] = request.args
+            base_response["post_arguments"] = request.form
         return base_response
 
     # Finalize the Base Response with additional data
     @staticmethod
-    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None):
+    def _get_final_response(base_response, output=None, airflow_cmd=None, http_response_code=None, warning=None):
         final_response = base_response
         final_response["response_time"] = datetime.now()
         if output:
@@ -461,13 +467,15 @@ class REST_API_Response_Util():
             final_response["airflow_cmd"] = airflow_cmd
         if http_response_code:
             final_response["http_response_code"] = http_response_code
+        if warning:
+            final_response["warning"] = warning
         return jsonify(final_response)
 
     # Set the Base Response as a 200 HTTP Response object
     @staticmethod
-    def get_200_response(base_response, output=None, airflow_cmd=None):
-        logging.warning("Returning a 200 Response Code with response '" + str(output) + "'")
-        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
+    def get_200_response(base_response, output=None, airflow_cmd=None, warning=None):
+        logging.info("Returning a 200 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd, warning=warning)
 
     # Set the Base Response and an Error
     @staticmethod
@@ -475,17 +483,23 @@ class REST_API_Response_Util():
         base_response["status"] = "ERROR"
         return REST_API_Response_Util._get_final_response(base_response=base_response, output=output, http_response_code=error_code), error_code
 
+    # Set the Base Response as a 400 HTTP Response object
+    @staticmethod
+    def get_400_error_response(base_response, output=None):
+        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 400, output)
+
     # Set the Base Response as a 403 HTTP Response object
     @staticmethod
     def get_403_error_response(base_response, output=None):
         logging.warning("Returning a 403 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 403, output)
 
-    # Set the Base Response as a 400 HTTP Response object
+    # Set the Base Response as a 500 HTTP Response object
     @staticmethod
-    def get_400_error_response(base_response, output=None):
-        logging.warning("Returning a 400 Response Code with response '" + str(output) + "'")
-        return REST_API_Response_Util._get_error_response(base_response, 400, output)
+    def get_500_error_response(base_response, output=None):
+        logging.warning("Returning a 500 Response Code with response '" + str(output) + "'")
+        return REST_API_Response_Util._get_error_response(base_response, 500, output)
 
 
 # REST_API View which extends the flask_admin BaseView
@@ -655,7 +669,8 @@ class REST_API(BaseView):
             output = self.execute_cli_command(airflow_cmd_split)
 
         # if desired, filter out the loading messages to reduce the noise in the output
-        if filter_loading_messages_in_cli_response:
+        if filter_loading_messages_in_cli_response and filter_loading_messages_in_cli_response.lower() == "true":
+            logging.info("Filtering Loading Messages from the CLI Response")
             output = self.filter_loading_messages(output)
 
         return REST_API_Response_Util.get_200_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
@@ -678,8 +693,15 @@ class REST_API(BaseView):
             logging.warning("The dag_file argument wasn't provided")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file should be provided")
         dag_file = request.files['dag_file']
+
         force = True if request.form.get('force') is not None else False
         logging.info("deploy_dag force upload: " + str(force))
+
+        pause = True if request.form.get('pause') is not None else False
+        logging.info("deploy_dag in pause state: " + str(pause))
+
+        unpause = True if request.form.get('unpause') is not None else False
+        logging.info("deploy_dag in unpause state: " + str(unpause))
 
         # make sure that the dag_file is a python script
         if dag_file and dag_file.filename.endswith(".py"):
@@ -697,23 +719,53 @@ class REST_API(BaseView):
             logging.warning("deploy_dag file is not a python file. It does not end with a .py.")
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_file is not a *.py file")
 
-        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file))
+        warning = None
+        # if both the pause and unpause options are provided then skip the pausing and unpausing phase
+        if not (pause and unpause):
+            if pause or unpause:
+                try:
+                    # import the DAG file that was uploaded so that we can get the DAG_ID to execute the command to pause or unpause it
+                    import imp
+                    dag_file = imp.load_source('module.name', save_file_path)
+                    dag_id = dag_file.dag.dag_id
+
+                    # run the pause or unpause cli command
+                    airflow_cmd_split = []
+                    if pause:
+                        airflow_cmd_split = ["airflow", "pause", dag_id]
+                    if unpause:
+                        airflow_cmd_split = ["airflow", "unpause", dag_id]
+                    cli_output = self.execute_cli_command(airflow_cmd_split)
+                except Exception, e:
+                    warning = "Failed to set the state (pause, unpause) of the DAG: " + str(e)
+                    logging.warning(warning)
+        else:
+            warning = "Both options pause and unpause were given. Skipping setting the state (pause, unpause) of the DAG."
+            logging.warning(warning)
+
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG File [{}] has been uploaded".format(dag_file), warning=warning)
 
     # Custom Function for the refresh_dag API
-    # This will call the '/admin/airflow/refresh' end point that already exists in Airflow
+    # This will call the direct function corresponding to the web endpoint '/admin/airflow/refresh' that already exists in Airflow
     def refresh_dag(self, base_response):
         logging.info("Executing custom 'refresh_dag' function")
         dag_id = request.args.get('dag_id')
-
+        logging.info("dag_id to refresh: '" + str(dag_id) + "'")
         if self.is_arg_not_provided(dag_id):
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_id should be provided")
         elif " " in dag_id:
             return REST_API_Response_Util.get_400_error_response(base_response, "dag_id contains spaces and is therefore an illegal argument")
 
-        refresh_dag_url = str(airflow_webserver_base_url) + '/admin/airflow/refresh?dag_id=' + str(dag_id)
-        logging.info("Calling: " + str(refresh_dag_url))
-        response = urllib2.urlopen(refresh_dag_url)
-        html = response.read()  # avoid using this as the output because this will include a large HTML string
+        try:
+            from airflow.www.views import Airflow
+            # NOTE: The request argument 'dag_id' is required for the refresh() function to get the dag_id
+            refresh_result = Airflow().refresh()
+            logging.info("Refresh Result: " + str(refresh_result))
+        except Exception, e:
+            error_message = "An error occurred while trying to Refresh the DAG '" + str(dag_id) + "': " + str(e)
+            logging.error(error_message)
+            return REST_API_Response_Util.get_500_error_response(base_response, error_message)
+
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
 
     # Executes the airflow command passed into it in the background so the function isn't tied to the webserver process
