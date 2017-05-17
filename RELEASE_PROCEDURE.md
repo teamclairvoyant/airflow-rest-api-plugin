@@ -20,7 +20,7 @@ This document describes the branching procedure and how to create new releases o
         6. Commit branch
             * $ git commit -m "	Creating new branch {BRANCH_NAME} and updating documents"
         7. Push Branch
-            * $ git push
+            * $ git push --set-upstream origin {BRANCH_NAME}
 2. Push all your changes into the Branch
     * For Pull Requests from External Contributors, those changes will also go into the Release Branch and not the Master
 3. Create a Pull Request to merge the changes from the Branch into Master
