@@ -51,11 +51,30 @@ The plugin also includes other custom REST APIs.
 
     * This is required for the API admin page to display the correct host
     
-5. Setup Authentication for Security (Optional)
+5. (Optional) Append the following content to the end of the {AIRFLOW_HOME}/airflow.cfg file to give you control over execution:
 
-    a. Follow the "Enabling Authentication" section bellow.
+        [rest_api_plugin]
+        
+        # Filters out loading messages from the standard out 
+        # DEFAULT: True
+        filter_loading_messages_in_cli_response = True
+        
+        # HTTP Header Name to be used for authenticating REST calls for the REST API Plugin
+        # DEFAULT: 'rest_api_plugin_http_token'
+        #rest_api_plugin_http_token_header_name = rest_api_plugin_http_token
+           
+        # HTTP Token  to be used for authenticating REST calls for the REST API Plugin
+        # DEFAULT: None
+        # Comment this out to disable Authentication
+        #rest_api_plugin_expected_http_token = changeme
 
-5. Restart the Airflow Web Server
+6. (Optional) Setup Authentication for Security
+
+    a. Note: Requires that step #5 above be completed.
+
+    b. Follow the "Enabling Authentication" section bellow.
+
+7. Restart the Airflow Web Server
 
 ### Enabling Authentication
 
@@ -65,19 +84,17 @@ The REST API client supports a simple token based authentication mechanism where
 
 1. Edit your {AIRFLOW_HOME}/airflow.cfg file
 
-    a. Under the [webserver] section add the following content:
+    a. Under the [rest_api_plugin] section you added in step #5 of the "Deployment Instructions", uncomment the following configs:
     
-        # HTTP Header Name to be used for authenticating REST calls for the REST API Plugin
-        # DEFAULT: 'rest_api_plugin_http_token'
         rest_api_plugin_http_token_header_name = rest_api_plugin_http_token
     
-        # HTTP Token  to be used for authenticating REST calls for the REST API Plugin
-        # Comment this out to disable Authentication
         rest_api_plugin_expected_http_token = changeme
-        
-2. Change the value of 'rest_api_plugin_expected_http_token' to the desired token people should pass 
 
-3. Restart the Airflow Web Server
+2. (Optional) Update the 'rest_api_plugin_http_token_header_name' to the desired value 
+        
+3. Change the value of 'rest_api_plugin_expected_http_token' to the desired token people should pass 
+
+4. Restart the Airflow Web Server
 
 #### Authenticating
 

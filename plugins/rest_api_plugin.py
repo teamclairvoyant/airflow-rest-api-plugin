@@ -21,13 +21,10 @@ CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org
 """
 
 # todo: dynamically decide which api objects to display based off which version of airflow is installed - http://stackoverflow.com/questions/1714027/version-number-comparison
-# todo: move configurations into a dedicated section in airflow.cfg file?
 
 # Location of the REST Endpoint
 # Note: Changing this will only effect where the messages are posted to on the web interface and will not change where the endpoint actually resides
 rest_api_endpoint = "/admin/rest_api/api"
-# Whether to filter the loading messages before sending the response back
-filter_loading_messages_in_cli_response = True  # todo: include this as an argument in the airflow.cfg file
 
 # Getting Versions and Global variables
 hostname = socket.gethostname()
@@ -38,15 +35,20 @@ rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
-airflow_rest_api_plugin_http_token_header_name = "rest_api_plugin_http_token"
-if configuration.has_option("webserver", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME"):
-    airflow_rest_api_plugin_http_token_header_name = configuration.get("webserver", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME")
-airflow_expected_http_token = None
-if configuration.has_option("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN"):
-    airflow_expected_http_token = configuration.get("webserver", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN")
+airflow_rest_api_plugin_http_token_header_name = configuration.get("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") else "rest_api_plugin_http_token"
+airflow_expected_http_token = configuration.get("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") else None
+filter_loading_messages_in_cli_response = configuration.get("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") if configuration.has_option("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") else "True"
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+logging.info("Initializing Airflow REST API Plugin with configs:")
+logging.info("\tairflow_webserver_base_url: " + str(airflow_webserver_base_url))
+logging.info("\tairflow_base_log_folder: " + str(airflow_base_log_folder))
+logging.info("\tairflow_dags_folder: " + str(airflow_dags_folder))
+logging.info("\tairflow_rest_api_plugin_http_token_header_name: " + str(airflow_rest_api_plugin_http_token_header_name))
+logging.info("\tairflow_expected_http_token: OMITTED FOR SECURITY")
+logging.info("\tfilter_loading_messages_in_cli_response: " + str(filter_loading_messages_in_cli_response))
 
 """
 Metadata that defines a single API:
@@ -174,7 +176,7 @@ apis_metadata = [
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False}
         ]
     },
-    {
+    {   # todo: should print out the run id
         "name": "trigger_dag",
         "description": "Trigger a DAG run",
         "airflow_version": "1.6.0 or greater",
@@ -667,7 +669,8 @@ class REST_API(BaseView):
             output = self.execute_cli_command(airflow_cmd_split)
 
         # if desired, filter out the loading messages to reduce the noise in the output
-        if filter_loading_messages_in_cli_response:
+        if filter_loading_messages_in_cli_response and filter_loading_messages_in_cli_response.lower() == "true":
+            logging.info("Filtering Loading Messages from the CLI Response")
             output = self.filter_loading_messages(output)
 
         return REST_API_Response_Util.get_200_response(base_response=base_response, output=output, airflow_cmd=airflow_cmd)
