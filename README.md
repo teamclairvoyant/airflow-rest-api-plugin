@@ -42,8 +42,6 @@ The plugin also includes other custom REST APIs.
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
 
 3. Unzip the file and move the contents of the plugins folder into your Airflow plugins directory
-
-        mkdir -p {AIRFLOW_PLUGINS_FOLDER}
     
         unzip airflow-rest-api-plugin-{RELEASE_VERSION_OR_BRANCH_NAME}.zip
     
@@ -56,6 +54,10 @@ The plugin also includes other custom REST APIs.
 5. (Optional) Append the following content to the end of the {AIRFLOW_HOME}/airflow.cfg file to give you control over execution:
 
         [rest_api_plugin]
+        
+        # Logs global variables used in the REST API plugin when the plugin is loaded. Set to False by default to avoid too many logging messages.
+        # DEFAULT: False
+        log_loading = False
         
         # Filters out loading messages from the standard out 
         # DEFAULT: True

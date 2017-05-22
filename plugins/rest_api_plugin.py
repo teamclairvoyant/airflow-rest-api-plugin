@@ -35,20 +35,26 @@ rest_api_plugin_version = __version__
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
+log_loading = configuration.getboolean("rest_api_plugin", "LOG_LOADING") if configuration.has_option("rest_api_plugin", "LOG_LOADING") else False
+filter_loading_messages_in_cli_response = configuration.getboolean("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") if configuration.has_option("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") else True
 airflow_rest_api_plugin_http_token_header_name = configuration.get("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") else "rest_api_plugin_http_token"
 airflow_expected_http_token = configuration.get("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") else None
-filter_loading_messages_in_cli_response = configuration.get("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") if configuration.has_option("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") else "True"
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
-logging.info("Initializing Airflow REST API Plugin with configs:")
-logging.info("\tairflow_webserver_base_url: " + str(airflow_webserver_base_url))
-logging.info("\tairflow_base_log_folder: " + str(airflow_base_log_folder))
-logging.info("\tairflow_dags_folder: " + str(airflow_dags_folder))
-logging.info("\tairflow_rest_api_plugin_http_token_header_name: " + str(airflow_rest_api_plugin_http_token_header_name))
-logging.info("\tairflow_expected_http_token: OMITTED FOR SECURITY")
-logging.info("\tfilter_loading_messages_in_cli_response: " + str(filter_loading_messages_in_cli_response))
+if log_loading:
+    logging.info("Initializing Airflow REST API Plugin with configs:")
+    logging.info("\trest_api_endpoint: " + str(rest_api_endpoint))
+    logging.info("\thostname: " + str(hostname))
+    logging.info("\tairflow_version: " + str(airflow_version))
+    logging.info("\trest_api_plugin_version: " + str(rest_api_plugin_version))
+    logging.info("\tairflow_webserver_base_url: " + str(airflow_webserver_base_url))
+    logging.info("\tairflow_base_log_folder: " + str(airflow_base_log_folder))
+    logging.info("\tairflow_dags_folder: " + str(airflow_dags_folder))
+    logging.info("\tairflow_rest_api_plugin_http_token_header_name: " + str(airflow_rest_api_plugin_http_token_header_name))
+    logging.info("\tairflow_expected_http_token: OMITTED_FOR_SECURITY")
+    logging.info("\tfilter_loading_messages_in_cli_response: " + str(filter_loading_messages_in_cli_response))
 
 """
 Metadata that defines a single API:
@@ -669,7 +675,7 @@ class REST_API(BaseView):
             output = self.execute_cli_command(airflow_cmd_split)
 
         # if desired, filter out the loading messages to reduce the noise in the output
-        if filter_loading_messages_in_cli_response and filter_loading_messages_in_cli_response.lower() == "true":
+        if filter_loading_messages_in_cli_response:
             logging.info("Filtering Loading Messages from the CLI Response")
             output = self.filter_loading_messages(output)
 
