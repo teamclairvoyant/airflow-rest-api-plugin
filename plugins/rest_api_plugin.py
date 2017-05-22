@@ -736,7 +736,7 @@ class REST_API(BaseView):
                     if unpause:
                         airflow_cmd_split = ["airflow", "unpause", dag_id]
                     cli_output = self.execute_cli_command(airflow_cmd_split)
-                except Exception, e:
+                except Exception as e:
                     warning = "Failed to set the state (pause, unpause) of the DAG: " + str(e)
                     logging.warning(warning)
         else:
@@ -761,7 +761,7 @@ class REST_API(BaseView):
             # NOTE: The request argument 'dag_id' is required for the refresh() function to get the dag_id
             refresh_result = Airflow().refresh()
             logging.info("Refresh Result: " + str(refresh_result))
-        except Exception, e:
+        except Exception as e:
             error_message = "An error occurred while trying to Refresh the DAG '" + str(dag_id) + "': " + str(e)
             logging.error(error_message)
             return REST_API_Response_Util.get_500_error_response(base_response, error_message)
