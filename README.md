@@ -40,6 +40,8 @@ The plugin also includes other custom REST APIs.
     * ULR to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
+        
+    * Note: Each release/branch has its own README.md file that describes the specific options and steps you should take to deploy and configure. Verify the options available in each release/branch after you download it.  
 
 3. Unzip the file and move the contents of the plugins folder into your Airflow plugins directory
     
