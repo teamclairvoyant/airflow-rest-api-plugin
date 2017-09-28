@@ -30,13 +30,15 @@ The plugin also includes other custom REST APIs.
         * v1.0.1
         * v1.0.2
         * v1.0.3
+        * v1.0.4
     * Branches Available:
         * master
         * v0.0.2-branch 
         * v1.0.0-branch 
         * v1.0.1-branch 
         * v1.0.2-branch 
-        * v1.0.3-branch 
+        * v1.0.3-branch
+        * v1.0.4-branch
     * ULR to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
