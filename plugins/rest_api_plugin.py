@@ -635,7 +635,9 @@ class REST_API(BaseView):
                 else:
                     airflow_cmd_split.extend(["--" + argument_name])
                     if argument["form_input_type"] is not "checkbox":
-                        airflow_cmd_split.extend(argument_value.split(" "))
+                        # Relacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration 
+                        # values contain space with them.
+                        airflow_cmd_split.append(argument_value)
             else:
                 logging.warning("argument_value is null")
 
