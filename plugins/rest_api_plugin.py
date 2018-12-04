@@ -789,6 +789,10 @@ class REST_API(BaseView):
     @staticmethod
     def execute_cli_command(airflow_cmd_split):
         logging.info("Executing CLI Command")
+        if airflow_cmd_split[2] == "--set":
+            airflow_cmd_split = ['airflow', 'variables', '--set', airflow_cmd_split[3].split()[0],
+                                 airflow_cmd_split[3].split()[1]]
+
         process = subprocess.Popen(airflow_cmd_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         return REST_API.collect_process_output(process)
