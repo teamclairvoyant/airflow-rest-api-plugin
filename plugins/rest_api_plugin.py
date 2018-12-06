@@ -127,7 +127,7 @@ apis_metadata = [
         "airflow_version": "1.7.1 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set a variable. Expected input in the form: KEY VALUE.", "form_input_type": "text", "required": False},
+            {"name": "set", "description": "Set a variable. Please enter both key and value", "form_input_type": "keyValue", "required": False},
             {"name": "get", "description": "Get value of a variable", "form_input_type": "text", "required": False},
             {"name": "json", "description": "Deserialize JSON variable", "form_input_type": "checkbox", "required": False},
             {"name": "default", "description": "Default value returned if variable does not exist", "form_input_type": "text", "required": False},
@@ -635,9 +635,17 @@ class REST_API(BaseView):
                 else:
                     airflow_cmd_split.extend(["--" + argument_name])
                     if argument["form_input_type"] is not "checkbox":
-                        # Relacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration 
-                        # values contain space with them.
-                        airflow_cmd_split.append(argument_value)
+                        if argument["form_input_type"] == "keyValue":
+                            key = argument_value
+                            value = request.args.get(argument_name + "_value")
+                            if value is None:
+                                return REST_API_Response_Util.get_400_error_response(base_response, "'value' is required for set command")
+                            airflow_cmd_split.append(key)
+                            airflow_cmd_split.append(value)
+                        else:
+                            # Replacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration
+                            # values contain space with them.
+                            airflow_cmd_split.append(argument_value)
             else:
                 logging.warning("argument_value is null")
 
@@ -789,10 +797,6 @@ class REST_API(BaseView):
     @staticmethod
     def execute_cli_command(airflow_cmd_split):
         logging.info("Executing CLI Command")
-        if airflow_cmd_split[2] == "--set":
-            airflow_cmd_split = ['airflow', 'variables', '--set', airflow_cmd_split[3].split()[0],
-                                 airflow_cmd_split[3].split()[1]]
-
         process = subprocess.Popen(airflow_cmd_split, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         return REST_API.collect_process_output(process)

@@ -15,6 +15,7 @@
     #dags-table td + td, #dags-table th + th { border-left: 1px solid; }
     #dags-table tr + tr { border-top: 1px solid; }
     th, td { padding: 4px; }
+    .keyValue { width: 42px; display: inline-block; text-align: right; }
 </style>
 
 <!--Simple Java Script is used and listed here: -->
@@ -120,7 +121,14 @@
                     {% for argument in api_metadata.arguments %}
                     <tr>
                         <td>{{argument.name}}:</td>
+                        {% if argument.form_input_type == "keyValue" %}
+                        <td>
+                               <p class="keyValue"> key: </p>  <input type="text" name="{{argument.name}}"/><br/>
+                               <p class="keyValue"> value: </p> <input type="text" name="{{argument.name}}_value"/>
+                        </td>
+                        {% else %}
                         <td><input type="{{argument.form_input_type}}" name="{{argument.name}}"/></td>
+                        {% endif %}
                         <td>{{argument.required}}</td>
                         <td>{{argument.description}}</td>
                     </tr>
