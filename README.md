@@ -31,6 +31,7 @@ The plugin also includes other custom REST APIs.
         * v1.0.2
         * v1.0.3
         * v1.0.4
+        * v1.0.5
     * Branches Available:
         * master
         * v0.0.2-branch 
@@ -39,6 +40,7 @@ The plugin also includes other custom REST APIs.
         * v1.0.2-branch 
         * v1.0.3-branch
         * v1.0.4-branch
+        * v1.0.5-branch
     * URL to Download From:
 
         https://github.com/teamclairvoyant/airflow-rest-api-plugin/archive/{RELEASE_VERSION_OR_BRANCH_NAME}.zip
@@ -201,7 +203,9 @@ GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
 Query Arguments:
 
-* set (optional) - string - Set a variable. Expected input in the form: KEY VALUE.
+* set (optional) - string - Sets a variable. Used to pass the variable key. This requires passing an additional set_value parameter. Please see the example below.
+
+* set_value (optional) - string - Used to pass the value of the variable. Only required when using the set parameter. 
 
 * get (optional) - string - Get value of a variable
      
@@ -219,7 +223,11 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=value&get=value&json&default=value&import=value&export=value&delete=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=value&set_value=value&get=value&json&default=value&import=value&export=value&delete=value
+
+For setting a variable like mykey=myvalue use
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=mykey&set_value=myvalue 
 
 ##### connections
 

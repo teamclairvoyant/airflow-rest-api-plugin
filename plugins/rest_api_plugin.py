@@ -1,5 +1,5 @@
 __author__ = 'robertsanders'
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
@@ -639,7 +639,8 @@ class REST_API(BaseView):
                             key = argument_value
                             value = request.args.get(argument_name + "_value")
                             if value is None:
-                                return REST_API_Response_Util.get_400_error_response(base_response, "'value' is required for set command")
+                                return REST_API_Response_Util.get_400_error_response(base_response,
+                                                                                     "'" + argument_name + "_value' is required for set command")
                             airflow_cmd_split.append(key)
                             airflow_cmd_split.append(value)
                         else:
