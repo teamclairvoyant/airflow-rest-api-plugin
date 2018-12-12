@@ -640,7 +640,7 @@ class REST_API(BaseView):
                             value = request.args.get(argument_name + "_value")
                             if value is None:
                                 return REST_API_Response_Util.get_400_error_response(base_response,
-                                                                                     "'" + argument_name + "_value' is required for set command")
+                                                                                     "'" + argument_name + "_value' is required")
                             airflow_cmd_split.append(key)
                             airflow_cmd_split.append(value)
                         else:
