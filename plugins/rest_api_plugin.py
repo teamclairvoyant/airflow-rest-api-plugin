@@ -1,5 +1,5 @@
 __author__ = 'robertsanders'
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
@@ -127,7 +127,7 @@ apis_metadata = [
         "airflow_version": "1.7.1 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set a variable. Expected input in the form: KEY VALUE.", "form_input_type": "text", "required": False},
+            {"name": "set", "description": "Set a variable. Please enter both key and value", "form_input_type": "keyValue", "required": False},
             {"name": "get", "description": "Get value of a variable", "form_input_type": "text", "required": False},
             {"name": "json", "description": "Deserialize JSON variable", "form_input_type": "checkbox", "required": False},
             {"name": "default", "description": "Default value returned if variable does not exist", "form_input_type": "text", "required": False},
@@ -621,6 +621,8 @@ class REST_API(BaseView):
         # starting to create the airflow_cmd function
         airflow_cmd_split = ["airflow", api_metadata["name"]]
 
+        run_api_in_background_mode = "background_mode" in api_metadata and api_metadata["background_mode"]
+
         # appending arguments to the airflow_cmd_split array and setting arguments aside in the end_arguments array to be appended onto the end of airflow_cmd_split
         end_arguments = [0] * largest_end_argument_value
         for argument in api_metadata["arguments"]:
@@ -628,6 +630,10 @@ class REST_API(BaseView):
             argument_value = request.args.get(argument_name)
             logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
             if argument_value is not None:
+                if run_api_in_background_mode:
+                    # wrap each argument in a quote for commands running in the background
+                    argument_value = '"' + argument_value + '"'
+
                 # if the argument should be appended onto the end, find the position and add it to the end_arguments array
                 if "cli_end_position" in argument:
                     logging.info("argument['cli_end_position']: " + str(argument['cli_end_position']))
@@ -635,9 +641,18 @@ class REST_API(BaseView):
                 else:
                     airflow_cmd_split.extend(["--" + argument_name])
                     if argument["form_input_type"] is not "checkbox":
-                        # Relacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration 
-                        # values contain space with them.
-                        airflow_cmd_split.append(argument_value)
+                        if argument["form_input_type"] == "keyValue":
+                            key = argument_value
+                            value = request.args.get(argument_name + "_value")
+                            if value is None:
+                                return REST_API_Response_Util.get_400_error_response(base_response,
+                                                                                     "'" + argument_name + "_value' is required")
+                            airflow_cmd_split.append(key)
+                            airflow_cmd_split.append(value)
+                        else:
+                            # Replacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration
+                            # values contain space with them.
+                            airflow_cmd_split.append(argument_value)
             else:
                 logging.warning("argument_value is null")
 
@@ -653,8 +668,6 @@ class REST_API(BaseView):
 
         # appending the end_arguments to the very end
         airflow_cmd_split.extend(end_arguments)
-
-        run_api_in_background_mode = "background_mode" in api_metadata and api_metadata["background_mode"]
 
         # handling the case where the process should be ran in the background
         if run_api_in_background_mode:
