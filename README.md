@@ -195,7 +195,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&ex
 
 ##### variables
 
-Displays the version of Airflow you're using
+CRUD operations on variables
 
 Available in Airflow Version: 1.7.1 or greater
 
