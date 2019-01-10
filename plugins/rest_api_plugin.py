@@ -621,6 +621,8 @@ class REST_API(BaseView):
         # starting to create the airflow_cmd function
         airflow_cmd_split = ["airflow", api_metadata["name"]]
 
+        run_api_in_background_mode = "background_mode" in api_metadata and api_metadata["background_mode"]
+
         # appending arguments to the airflow_cmd_split array and setting arguments aside in the end_arguments array to be appended onto the end of airflow_cmd_split
         end_arguments = [0] * largest_end_argument_value
         for argument in api_metadata["arguments"]:
@@ -628,6 +630,10 @@ class REST_API(BaseView):
             argument_value = request.args.get(argument_name)
             logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
             if argument_value is not None:
+                if run_api_in_background_mode:
+                    # wrap each argument in a quote for commands running in the background
+                    argument_value = '"' + argument_value + '"'
+
                 # if the argument should be appended onto the end, find the position and add it to the end_arguments array
                 if "cli_end_position" in argument:
                     logging.info("argument['cli_end_position']: " + str(argument['cli_end_position']))
@@ -662,8 +668,6 @@ class REST_API(BaseView):
 
         # appending the end_arguments to the very end
         airflow_cmd_split.extend(end_arguments)
-
-        run_api_in_background_mode = "background_mode" in api_metadata and api_metadata["background_mode"]
 
         # handling the case where the process should be ran in the background
         if run_api_in_background_mode:
