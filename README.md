@@ -205,7 +205,7 @@ GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
 Query Arguments:
 
-* set (optional) - string - Sets a variable. Used to pass the variable key. This requires passing an additional set_value parameter. Please see the example below.
+* set (optional) - string - Sets a variable. This requires passing an additional command, key, value parameters. Please see the example below.
 
 * set_value (optional) - string - Used to pass the value of the variable. Only required when using the set parameter. 
 
@@ -225,11 +225,11 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=value&set_value=value&get=value&json&default=value&import=value&export=value&delete=value
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables&cmd=set&key=value&value=value&get=value&json&default=value&import=value&export=value&delete=value
 
 For setting a variable like mykey=myvalue use
 
-http://{HOST}:{PORT}/admin/rest_api/api?api=variables&set=mykey&set_value=myvalue 
+http://{HOST}:{PORT}/admin/rest_api/api?api=variables&cmd=set&key=mykey&value=myvalue 
 
 ##### connections
 
@@ -659,7 +659,7 @@ GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pool
 
 Query Arguments:
 
-* set (optional) - string - Set pool slot count and description, respectively. Expected input in the form: NAME SLOT_COUNT POOL_DESCRIPTION.
+* set (optional) - string - Set pool slot count and description, respectively. This requires passing an additional command, pool_name, slot_count and description parameters. Please see the example below.
 
 * get (optional) - string - Get pool info
 
@@ -668,6 +668,13 @@ Query Arguments:
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=pool
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=pool&cmd=set&pool_name=value&slot_count=value&description=value&get=value&delete=value
+
+For setting a pool like mypoolname with mypoolslotcount and mypooldescription 
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=pool&cmd=set&pool_name=mypoolname&slot_count=mypoolslotcount&description=mypooldescription
+
 
 ##### serve_logs
 

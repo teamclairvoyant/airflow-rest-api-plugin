@@ -127,7 +127,7 @@ apis_metadata = [
         "airflow_version": "1.7.1 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set a variable. Please enter both key and value", "form_input_type": "keyValue", "required": False},
+            {"name": "set", "description": "Set a variable. Please enter both key and value", "form_input_type": "custom_input","fields":[{"key":"Key"},{"value":"Value"}], "required": False},
             {"name": "get", "description": "Get value of a variable", "form_input_type": "text", "required": False},
             {"name": "json", "description": "Deserialize JSON variable", "form_input_type": "checkbox", "required": False},
             {"name": "default", "description": "Default value returned if variable does not exist", "form_input_type": "text", "required": False},
@@ -372,7 +372,7 @@ apis_metadata = [
         "airflow_version": "1.8.0 or greater",
         "http_method": "GET",
         "arguments": [
-            {"name": "set", "description": "Set pool slot count and description, respectively. Expected input in the form: NAME SLOT_COUNT POOL_DESCRIPTION.", "form_input_type": "text", "required": False},
+            {"name": "set", "description": "Set a Pool. Please enter the pool name, slot count and description", "form_input_type": "custom_input", "fields":[{"pool_name":"Pool Name"}, {"slot_count":"Slot Count"}, {"pool_description":"Description"}], "required": False},
             {"name": "get", "description": "Get pool info", "form_input_type": "text", "required": False},
             {"name": "delete", "description": "Delete a pool", "form_input_type": "text", "required": False}
         ]
@@ -628,7 +628,21 @@ class REST_API(BaseView):
         for argument in api_metadata["arguments"]:
             argument_name = argument["name"]
             argument_value = request.args.get(argument_name)
+            logging.info("form_input_type: " + str(argument["form_input_type"]))
             logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
+            if argument["form_input_type"] == "custom_input" and argument_value is None:
+                args = dict(request.args)
+                key = args.get('cmd')
+
+                if key is not None and argument_name == key[0]:
+                    airflow_cmd_split.extend(["--" + key[0]])
+                    logging.info("fields: " + str(argument["fields"]))
+                    for field in argument["fields"]:
+                        field_key = field.keys()[0]
+                        value = args.get(field_key)
+                        if value is not None:
+                            airflow_cmd_split.append(value[0])
+
             if argument_value is not None:
                 if run_api_in_background_mode:
                     # wrap each argument in a quote for commands running in the background
@@ -641,18 +655,9 @@ class REST_API(BaseView):
                 else:
                     airflow_cmd_split.extend(["--" + argument_name])
                     if argument["form_input_type"] is not "checkbox":
-                        if argument["form_input_type"] == "keyValue":
-                            key = argument_value
-                            value = request.args.get(argument_name + "_value")
-                            if value is None:
-                                return REST_API_Response_Util.get_400_error_response(base_response,
-                                                                                     "'" + argument_name + "_value' is required")
-                            airflow_cmd_split.append(key)
-                            airflow_cmd_split.append(value)
-                        else:
-                            # Replacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration
-                            # values contain space with them.
-                            airflow_cmd_split.append(argument_value)
+                        # Replacing airflow_cmd_split.extend(argument_value.split(" ") with command below to fix issue where configuration
+                        # values contain space with them.
+                        airflow_cmd_split.append(argument_value)
             else:
                 logging.warning("argument_value is null")
 
