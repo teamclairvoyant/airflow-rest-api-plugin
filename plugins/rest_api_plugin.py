@@ -516,6 +516,10 @@ class REST_API(BaseView):
     def is_visible(self):
         return current_user.is_authenticated
 
+    # overrides BaseView method to check permission for the menu link
+    def is_accessible(self):
+        return current_user.is_authenticated
+
     # Checks a string object to see if it is none or empty so we can determine if an argument (passed to the rest api) is provided
     @staticmethod
     def is_arg_not_provided(arg):
