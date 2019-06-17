@@ -2,9 +2,9 @@
 
 ### Description
 
-A plugin for [Apache Airflow](https://github.com/apache/incubator-airflow) that exposes REST endpoints for the Command Line Interfaces listed in the airflow documentation:
+A plugin for [Apache Airflow](https://github.com/apache/airflow) that exposes REST endpoints for the Command Line Interfaces listed in the airflow documentation:
 
-[http://airflow.incubator.apache.org/cli.html](http://airflow.incubator.apache.org/cli.html)
+[http://airflow.apache.org/cli.html](http://airflow.apache.org/cli.html)
 
 The plugin also includes other custom REST APIs.
 
