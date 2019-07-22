@@ -648,7 +648,7 @@ class REST_API(BaseView):
                     airflow_cmd_split.extend(["--" + key])
                     logging.info("fields: " + str(argument["fields"]))
                     for field in argument["fields"]:
-                        field_key = field.keys()[0]
+                        field_key = list(field.keys())[0]
                         value = self.get_argument(request, field_key)
                         if value is not None:
                             airflow_cmd_split.append(value)
