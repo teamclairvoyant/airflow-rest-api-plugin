@@ -671,7 +671,7 @@ class REST_API(BaseView):
         for argument in api_metadata["arguments"]:
             argument_name = argument["name"]
             argument_value = self.get_argument(request, argument_name)
-            logging.info("argument_name: " + str(argument_name) + "argument_value: " + str(argument_value))
+            logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
             if argument["form_input_type"] == "custom_input" and argument_value is None:
                 key = self.get_argument(request, 'cmd')
                 if key is not None and argument_name == key:
