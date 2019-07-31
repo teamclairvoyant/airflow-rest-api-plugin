@@ -32,14 +32,38 @@ hostname = socket.gethostname()
 airflow_version = airflow.__version__
 rest_api_plugin_version = __version__
 
+# Get config value as String for a given section/key
+def get_config_string_value(section, key, default_value):
+    config_value = default_value
+    try:
+        config_value = configuration.get(section, key)
+        if config_value == '':
+            logging.warning(
+                "[" + str(section) + "/" + str(key) + "] value is empty")
+    except Exception as e:
+        logging.warning("Initializing [" + str(section) + "/" + str(key) + "] with default value = " + str(default_value))
+
+    return config_value
+
+# Get config value as Boolean for a given section/key
+def get_config_boolean_value(section, key, default_value):
+    config_value = default_value
+    try:
+        config_value = configuration.getboolean(section, key)
+    except Exception as e:
+        logging.warning("Initializing [" + str(section) + "/" + str(key) + "] with default value = " + str(default_value))
+
+    return config_value
+
 # Getting configurations from airflow.cfg file
 airflow_webserver_base_url = configuration.get('webserver', 'BASE_URL')
 airflow_base_log_folder = configuration.get('core', 'BASE_LOG_FOLDER')
 airflow_dags_folder = configuration.get('core', 'DAGS_FOLDER')
-log_loading = configuration.getboolean("rest_api_plugin", "LOG_LOADING") if configuration.has_option("rest_api_plugin", "LOG_LOADING") else False
-filter_loading_messages_in_cli_response = configuration.getboolean("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") if configuration.has_option("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE") else True
-airflow_rest_api_plugin_http_token_header_name = configuration.get("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME") else "rest_api_plugin_http_token"
-airflow_expected_http_token = configuration.get("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") if configuration.has_option("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN") else None
+log_loading = get_config_boolean_value("rest_api_plugin", "LOG_LOADING", False)
+filter_loading_messages_in_cli_response = get_config_boolean_value("rest_api_plugin", "FILTER_LOADING_MESSAGES_IN_CLI_RESPONSE", True)
+airflow_rest_api_plugin_http_token_header_name = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME", "rest_api_plugin_http_token")
+airflow_expected_http_token = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN", None)
+web_authentication_enabled = configuration.getboolean("webserver", "AUTHENTICATE")
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -514,11 +538,17 @@ class REST_API(BaseView):
 
     # overrides BaseView method to show/hide the menu links dynamically
     def is_visible(self):
-        return current_user.is_authenticated
+        if web_authentication_enabled and current_user.is_authenticated == False:
+            return False
+        elif web_authentication_enabled and current_user.is_authenticated == True:
+            return True
+        else:
+            if web_authentication_enabled == False:
+                return True
 
     # overrides BaseView method to check permission for the menu link
-    def is_accessible(self):
-        return current_user.is_authenticated
+    # def is_accessible(self):
+    #     return current_user.is_authenticated
 
     # Checks a string object to see if it is none or empty so we can determine if an argument (passed to the rest api) is provided
     @staticmethod
@@ -641,12 +671,11 @@ class REST_API(BaseView):
         for argument in api_metadata["arguments"]:
             argument_name = argument["name"]
             argument_value = self.get_argument(request, argument_name)
-            logging.info("argument_name: " + str(argument_name) + ", argument_value: " + str(argument_value))
+            logging.info("argument_name: " + str(argument_name) + "argument_value: " + str(argument_value))
             if argument["form_input_type"] == "custom_input" and argument_value is None:
                 key = self.get_argument(request, 'cmd')
                 if key is not None and argument_name == key:
                     airflow_cmd_split.extend(["--" + key])
-                    logging.info("fields: " + str(argument["fields"]))
                     for field in argument["fields"]:
                         field_key = list(field.keys())[0]
                         value = self.get_argument(request, field_key)
