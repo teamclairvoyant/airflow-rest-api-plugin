@@ -1,5 +1,5 @@
 __author__ = 'robertsanders'
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 from airflow.models import DagBag, DagModel
 from airflow.plugins_manager import AirflowPlugin
