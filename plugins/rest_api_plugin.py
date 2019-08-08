@@ -454,6 +454,13 @@ apis_metadata = [
         "arguments": [
             {"name": "dag_id", "description": "The id of the dag", "form_input_type": "text", "required": True}
         ]
+    },
+    {
+        "name": "refresh_all_dags",
+        "description": "Refresh all DAGs in the Web Server",
+        "airflow_version": "None - Custom API",
+        "http_method": ["GET", "POST"],
+        "arguments": []
     }
 ]
 
@@ -645,6 +652,8 @@ class REST_API(BaseView):
             final_response = self.deploy_dag(base_response)
         elif api == "refresh_dag":
             final_response = self.refresh_dag(base_response)
+        elif api == "refresh_all_dags":
+            final_response = self.refresh_all_dags(base_response)
         else:
             final_response = self.execute_cli(base_response, api_metadata)
 
@@ -831,6 +840,22 @@ class REST_API(BaseView):
             return REST_API_Response_Util.get_500_error_response(base_response, error_message)
 
         return REST_API_Response_Util.get_200_response(base_response=base_response, output="DAG [{}] is now fresh as a daisy".format(dag_id))
+
+    # Custom Function for the refresh_all_dags API
+    # This will call the direct function corresponding to the web endpoint '/admin/airflow/refresh_all' that already exists in Airflow
+    def refresh_all_dags(self, base_response):
+        logging.info("Executing custom 'refresh_all_dags' function")
+
+        try:
+            from airflow.www.views import Airflow
+            refresh_result = Airflow().refresh_all()
+            logging.info("Refresh Result: " + str(refresh_result))
+        except Exception as e:
+            error_message = "An error occurred while trying to Refresh all the DAGs: " + str(e)
+            logging.error(error_message)
+            return REST_API_Response_Util.get_500_error_response(base_response, error_message)
+
+        return REST_API_Response_Util.get_200_response(base_response=base_response, output="All DAGs are now up to date")
 
     # Executes the airflow command passed into it in the background so the function isn't tied to the webserver process
     @staticmethod

@@ -783,6 +783,22 @@ Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id
 
+##### refresh_all_dags
+
+Refresh all DAGs. Supports both http GET and POST methods.
+
+Available in Airflow Version: None - Custom API
+
+GET - http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags
+
+Query Arguments:
+
+None
+
+Examples:
+
+http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags
+
 #### API Response
 
 The API's will all return a common response object. It is a JSON object with the following entries in it:
