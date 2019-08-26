@@ -7,7 +7,7 @@ from airflow import configuration
 from airflow.www.app import csrf
 
 from flask import Blueprint, request, jsonify
-from flask_admin import BaseView, expose
+from flask_admin import BaseView as AdminBaseview, expose as admin_expose
 from flask_login import current_user
 
 from datetime import datetime
@@ -16,7 +16,9 @@ import logging
 import subprocess
 import os
 import socket
-
+from flask_appbuilder import expose as app_builder_expose, BaseView as AppBuilderBaseView,has_access
+from flask_jwt_extended.view_decorators import  jwt_required
+from flask_jwt_extended.utils import get_jwt_identity, get_current_user
 """
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
@@ -64,6 +66,7 @@ filter_loading_messages_in_cli_response = get_config_boolean_value("rest_api_plu
 airflow_rest_api_plugin_http_token_header_name = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME", "rest_api_plugin_http_token")
 airflow_expected_http_token = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN", None)
 web_authentication_enabled = configuration.getboolean("webserver", "AUTHENTICATE")
+rbac_authentication_enabled = configuration.getboolean("webserver","RBAC")
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -296,7 +299,8 @@ apis_metadata = [
             {"name": "ignore_first_depends_on_past", "description": "Ignores depends_on_past dependencies for the first set of tasks only (subsequent executions in the backfill DO respect depends_on_past).", "form_input_type": "checkbox", "required": False},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "pool", "description": "Resource pool to use", "form_input_type": "text", "required": False},
-            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False}
+            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False},
+            {"name": "reset_dagruns", "description": "if set, the backfill will delete existing backfill-related DAG runs and start anew with fresh, running DAG runs", "form_input_type": "checkbox", "required": False}
         ]
     },
     {
@@ -539,25 +543,25 @@ class REST_API_Response_Util():
         logging.warning("Returning a 500 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 500, output)
 
+#RBAC condition  based for flask app builder and has_acess, flask admin
 
-# REST_API View which extends the flask_admin BaseView
-class REST_API(BaseView):
+def get_baseview():
+    if rbac_authentication_enabled == True:
+        return AppBuilderBaseView
+    else:
+        return AdminBaseview
 
-    # overrides BaseView method to show/hide the menu links dynamically
-    def is_visible(self):
-        if web_authentication_enabled and current_user.is_authenticated == False:
-            return False
-        elif web_authentication_enabled and current_user.is_authenticated == True:
-            return True
-        else:
-            if web_authentication_enabled == False:
-                return True
+def has_access_decorator(dec_name, rbac_condition):
+    def has_decorator(func):
+        if not rbac_condition:
+            # Return the function unchanged, not decorated.
+            return func
+        return dec_name(func)
+    return has_decorator
 
-    # overrides BaseView method to check permission for the menu link
-    # def is_accessible(self):
-    #     return current_user.is_authenticated
-
-    # Checks a string object to see if it is none or empty so we can determine if an argument (passed to the rest api) is provided
+# REST_API View which extends the flask app builder and flask admin view
+class REST_API(get_baseview()):
+    route_base = "/admin/rest_api/"
     @staticmethod
     def is_arg_not_provided(arg):
         return arg is None or arg == ""
@@ -571,37 +575,74 @@ class REST_API(BaseView):
     def get_argument(request, arg):
         return request.args.get(arg) or request.form.get(arg)
 
+    # overrides BaseView method to show/hide the menu links dynamically
+    def is_visible(self):
+        if web_authentication_enabled and current_user.is_authenticated == False:
+            return False
+        elif web_authentication_enabled and current_user.is_authenticated == True:
+            return True
+        else:
+            if web_authentication_enabled == False:
+                return True
+
     # '/' Endpoint where the Admin page is which allows you to view the APIs available and trigger them
-    @expose('/')
-    def index(self):
-        logging.info("REST_API.index() called")
+    if rbac_authentication_enabled == True:
+        @app_builder_expose('/')
+        def list(self):
+            logging.info("REST_API.index() called")
 
-        # get the information that we want to display on the page regarding the dags that are available
-        dagbag = self.get_dagbag()
-        dags = []
-        for dag_id in dagbag.dags:
-            orm_dag = DagModel.get_current(dag_id)
-            dags.append({
-                "dag_id": dag_id,
-                "is_active": (not orm_dag.is_paused) if orm_dag is not None else False
-            })
+            # get the information that we want to display on the page regarding the dags that are available
+            dagbag = self.get_dagbag()
+            dags = []
+            for dag_id in dagbag.dags:
+                orm_dag = DagModel.get_current(dag_id)
+                dags.append({
+                    "dag_id": dag_id,
+                    "is_active": (not orm_dag.is_paused) if orm_dag is not None else False
+                })
 
-        return self.render("rest_api_plugin/index.html",
-                           dags=dags,
-                           airflow_webserver_base_url=airflow_webserver_base_url,
-                           rest_api_endpoint=rest_api_endpoint,
-                           apis_metadata=apis_metadata,
-                           airflow_version=airflow_version,
-                           rest_api_plugin_version=rest_api_plugin_version
-                           )
+            return self.render_template("/rest_api_plugin/index.html",
+                                        dags=dags,
+                                        airflow_webserver_base_url=airflow_webserver_base_url,
+                                        rest_api_endpoint=rest_api_endpoint,
+                                        apis_metadata=apis_metadata,
+                                        airflow_version=airflow_version,
+                                        rest_api_plugin_version=rest_api_plugin_version,
+                                        rbac_authentication_enabled=rbac_authentication_enabled
+                                        )
+    else:
+        @admin_expose('/')
+        def index(self):
+            logging.info("REST_API.index() called")
+
+            # get the information that we want to display on the page regarding the dags that are available
+            dagbag = self.get_dagbag()
+            dags = []
+            for dag_id in dagbag.dags:
+                orm_dag = DagModel.get_current(dag_id)
+                dags.append({
+                    "dag_id": dag_id,
+                    "is_active": (not orm_dag.is_paused) if orm_dag is not None else False
+                })
+                return self.render("rest_api_plugin/index.html",
+                                   dags=dags,
+                                   airflow_webserver_base_url=airflow_webserver_base_url,
+                                   rest_api_endpoint=rest_api_endpoint,
+                                   apis_metadata=apis_metadata,
+                                   airflow_version=airflow_version,
+                                   rest_api_plugin_version=rest_api_plugin_version,
+                                   rbac_authentication_enabled=rbac_authentication_enabled
+                                   )
 
     # '/api' REST Endpoint where API requests should all come in
+    # @jwt_required
+    @has_access_decorator(has_access, rbac_authentication_enabled)
     @csrf.exempt  # Exempt the CSRF token
-    @expose('/api', methods=["GET", "POST"])
+    @admin_expose('/api', methods=["GET", "POST"])
+    @app_builder_expose('/api', methods=["GET", "POST"])
     @http_token_secure  # On each request,
     def api(self):
         base_response = REST_API_Response_Util.get_base_response()
-
         # Get the api that you want to execute
         api = self.get_argument(request, 'api')
         if api is not None:
@@ -922,7 +963,10 @@ class REST_API(BaseView):
         return output
 
 # Creating View to be used by Plugin
-rest_api_view = REST_API(category="Admin", name="REST API Plugin")
+if rbac_authentication_enabled == True:
+    rest_api_view = {"category" : "Admin", "name" : "REST API Plugin",  "view": REST_API()}
+else:
+    rest_api_view = REST_API(category="Admin", name="REST API Plugin")
 
 # Creating Blueprint
 rest_api_bp = Blueprint(
@@ -938,6 +982,7 @@ rest_api_bp = Blueprint(
 class REST_API_Plugin(AirflowPlugin):
     name = "rest_api"
     operators = []
+    appbuilder_views = [rest_api_view]
     flask_blueprints = [rest_api_bp]
     hooks = []
     executors = []
