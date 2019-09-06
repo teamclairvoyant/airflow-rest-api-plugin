@@ -9,6 +9,8 @@ from airflow.www.app import csrf
 from flask import Blueprint, request, jsonify
 from flask_admin import BaseView as AdminBaseview, expose as admin_expose
 from flask_login import current_user
+from flask_login.mixins import AnonymousUserMixin
+from flask_login.utils import _get_user
 
 from datetime import datetime
 import airflow
@@ -17,8 +19,10 @@ import subprocess
 import os
 import socket
 from flask_appbuilder import expose as app_builder_expose, BaseView as AppBuilderBaseView,has_access
-from flask_jwt_extended.view_decorators import  jwt_required
-from flask_jwt_extended.utils import get_jwt_identity, get_current_user
+from flask_jwt_extended.view_decorators import jwt_required, verify_jwt_in_request
+
+
+
 """
 CLIs this REST API exposes are Defined here: http://airflow.incubator.apache.org/cli.html
 """
@@ -66,7 +70,7 @@ filter_loading_messages_in_cli_response = get_config_boolean_value("rest_api_plu
 airflow_rest_api_plugin_http_token_header_name = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_HTTP_TOKEN_HEADER_NAME", "rest_api_plugin_http_token")
 airflow_expected_http_token = get_config_string_value("rest_api_plugin", "REST_API_PLUGIN_EXPECTED_HTTP_TOKEN", None)
 web_authentication_enabled = configuration.getboolean("webserver", "AUTHENTICATE")
-rbac_authentication_enabled = configuration.getboolean("webserver","RBAC")
+rbac_authentication_enabled = configuration.getboolean("webserver", "RBAC")
 
 # Using UTF-8 Encoding so that response messages don't have any characters in them that can't be handled
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -485,6 +489,19 @@ def http_token_secure(func):
 
     return secure_check
 
+# Function used to validate the JWT Token
+def jwt_token_secure(func):
+    def jwt_secure_check(arg):
+        logging.info("Rest_API_Plugin.jwt_token_secure() called")
+        if _get_user().is_anonymous is False and rbac_authentication_enabled is True:
+            return func(arg)
+        elif rbac_authentication_enabled is False:
+            return func(arg)
+        else:
+            verify_jwt_in_request()
+            return jwt_required(func(arg))
+    return jwt_secure_check
+
 
 # Utility for creating the REST Responses
 class REST_API_Response_Util():
@@ -543,23 +560,13 @@ class REST_API_Response_Util():
         logging.warning("Returning a 500 Response Code with response '" + str(output) + "'")
         return REST_API_Response_Util._get_error_response(base_response, 500, output)
 
-#RBAC condition  based for flask app builder and has_acess, flask admin
-
 def get_baseview():
     if rbac_authentication_enabled == True:
         return AppBuilderBaseView
     else:
         return AdminBaseview
 
-def has_access_decorator(dec_name, rbac_condition):
-    def has_decorator(func):
-        if not rbac_condition:
-            # Return the function unchanged, not decorated.
-            return func
-        return dec_name(func)
-    return has_decorator
-
-# REST_API View which extends the flask app builder and flask admin view
+# REST_API View which extends either flask AppBuilderBaseView or flask AdminBaseView
 class REST_API(get_baseview()):
     route_base = "/admin/rest_api/"
     @staticmethod
@@ -589,7 +596,7 @@ class REST_API(get_baseview()):
     if rbac_authentication_enabled == True:
         @app_builder_expose('/')
         def list(self):
-            logging.info("REST_API.index() called")
+            logging.info("REST_API.list() called")
 
             # get the information that we want to display on the page regarding the dags that are available
             dagbag = self.get_dagbag()
@@ -624,7 +631,8 @@ class REST_API(get_baseview()):
                     "dag_id": dag_id,
                     "is_active": (not orm_dag.is_paused) if orm_dag is not None else False
                 })
-                return self.render("rest_api_plugin/index.html",
+
+            return self.render("rest_api_plugin/index.html",
                                    dags=dags,
                                    airflow_webserver_base_url=airflow_webserver_base_url,
                                    rest_api_endpoint=rest_api_endpoint,
@@ -635,12 +643,11 @@ class REST_API(get_baseview()):
                                    )
 
     # '/api' REST Endpoint where API requests should all come in
-    # @jwt_required
-    @has_access_decorator(has_access, rbac_authentication_enabled)
     @csrf.exempt  # Exempt the CSRF token
-    @admin_expose('/api', methods=["GET", "POST"])
-    @app_builder_expose('/api', methods=["GET", "POST"])
-    @http_token_secure  # On each request,
+    @admin_expose('/api', methods=["GET", "POST"]) #for Flask Admin
+    @app_builder_expose('/api', methods=["GET", "POST"]) #for Flask AppBuilder
+    @http_token_secure # On each request
+    @jwt_token_secure # On each request
     def api(self):
         base_response = REST_API_Response_Util.get_base_response()
         # Get the api that you want to execute
