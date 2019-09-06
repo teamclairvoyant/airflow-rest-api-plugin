@@ -142,7 +142,7 @@ This web page will show the Endpoints supported and provide a form for you to te
  
 ### RBAC Support
 
-Plugin supports RBAC feature for Airflow versions 1.10.3 or higher.
+Plugin supports RBAC feature for Airflow versions 1.10.4 or higher.
 
 * Set `rbac = True` in `airflow.cfg` config file under `webserver` category.
 * Run `airflow initdb` command which generates a new config file `webserver_config.py` under the AIRFLOW_HOME.
