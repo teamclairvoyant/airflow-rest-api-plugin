@@ -303,8 +303,7 @@ apis_metadata = [
             {"name": "ignore_first_depends_on_past", "description": "Ignores depends_on_past dependencies for the first set of tasks only (subsequent executions in the backfill DO respect depends_on_past).", "form_input_type": "checkbox", "required": False},
             {"name": "subdir", "description": "File location or directory from which to look for the dag", "form_input_type": "text", "required": False},
             {"name": "pool", "description": "Resource pool to use", "form_input_type": "text", "required": False},
-            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False},
-            {"name": "reset_dagruns", "description": "if set, the backfill will delete existing backfill-related DAG runs and start anew with fresh, running DAG runs", "form_input_type": "checkbox", "required": False}
+            {"name": "dry_run", "description": "Perform a dry run", "form_input_type": "checkbox", "required": False}
         ]
     },
     {
