@@ -149,6 +149,10 @@ Plugin supports RBAC feature for Airflow versions 1.10.4 or higher.
 * This file contains the default settings for working with RBAC
 * You should see a new `Security` menu in the Airflow UI
 
+**Note:** Once you enable the RBAC support, it will create new set of Database Tables. So, you need to manually 
+migrate your existing users from `users` table to the new table `ab_users`. While migrating you need to specify 
+the role for each user. Please check [Create User](https://airflow.apache.org/cli.html#create_user) for more details.
+
 ### Enabling the plugin UI support under RBAC
 
 Plugin works out of the box. If you need to access the plugin UI please follow the below steps.
