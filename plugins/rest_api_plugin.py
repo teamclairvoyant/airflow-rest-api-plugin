@@ -937,15 +937,15 @@ class REST_API(get_baseview()):
         if process.stderr is not None:
             output["stderr"] = ""
             for line in process.stderr.readlines():
-                output["stderr"] += str(line)
+                output["stderr"] += str(line.decode('utf-8'))
         if process.stdin is not None:
             output["stdin"] = ""
             for line in process.stdin.readlines():
-                output["stdin"] += str(line)
+                output["stdin"] += str(line.decode('utf-8'))
         if process.stdout is not None:
             output["stdout"] = ""
             for line in process.stdout.readlines():
-                output["stdout"] += str(line)
+                output["stdout"] += str(line.decode('utf-8'))
         logging.info("RestAPI Output: " + str(output))
         return output
 
