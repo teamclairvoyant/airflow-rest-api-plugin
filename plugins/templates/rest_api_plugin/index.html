@@ -8,7 +8,13 @@
 {% endblock %}
 
 {% block body %}
-
+ {% if  rbac_authentication_enabled %}
+ {% block navbar %}
+        <header class="top" role="header">
+        {% include 'appbuilder/navbar.html' %}
+        </header>
+ {% endblock %}
+ {%endif%}
 <!--Simple Styling is done, so its all listed here:-->
 <style type="text/css">
     #dags-table table { border-collapse: collapse; }
