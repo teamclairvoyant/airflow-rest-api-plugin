@@ -13,6 +13,10 @@ The plugin also includes other custom REST APIs.
 * Airflow Versions
     * 1.X
 
+### Dependencies
+
+* If you are using the latest plugin release v1.0.8 with Airflow v1.10.3 or lower then you need to manually install `flask_jwt_extended` module.  
+
 ### Deployment Instructions
 
 1. Create the plugins folder if it doesn't exist. 
@@ -92,9 +96,14 @@ The plugin also includes other custom REST APIs.
 
     b. Follow the "Enabling Authentication" section below.
 
-7. Restart the Airflow Web Server
+7. We need to replace the `CSRF_ENABLED` attribute with `WTF_CSRF_ENABLED`. 
+   This change is required to support the POST method when RBAC is enabled with JWT.
+   Please add the following property in the `{AIRFLOW_HOME}/webserver_config.py` file.
 
-**Note:** If you are using the latest plugin release v1.0.8 with Airflow v1.10.3 or lower then you need to manually install `flask_jwt_extended` module.  
+        # Flask-WTF flag for CSRF
+        WTF_CSRF_ENABLED = False
+
+8. Restart the Airflow Web Server
 
 ### Enabling Authentication
 
