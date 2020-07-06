@@ -179,6 +179,7 @@ apis_metadata = [
             {"name": "delete", "description": "Delete a connection", "form_input_type": "checkbox", "required": False},
             {"name": "conn_id", "description": "Connection id, required to add/delete a connection", "form_input_type": "text", "required": False},
             {"name": "conn_uri", "description": "Connection URI, required to add a connection", "form_input_type": "text", "required": False},
+            {"name": "conn_type", "description": "Connection type, required to add a connection without conn_uri", "form_input_type": "text", "required": False},
             {"name": "conn_extra", "description": "Connection 'Extra' field, optional when adding a connection", "form_input_type": "text", "required": False}
         ]
     },

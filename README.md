@@ -346,6 +346,8 @@ Query Arguments:
 
 * conn_uri (optional) - string - Connection URI, required to add a connection
 
+* conn_type (optional) - string - Connection type, required to add a connection without conn_uri
+
 * conn_extra (optional) - string - Connection 'Extra' field, optional when adding a connection
 
 Examples:
