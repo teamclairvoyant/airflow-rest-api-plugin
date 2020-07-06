@@ -443,7 +443,7 @@ apis_metadata = [
         "name": "deploy_dag",
         "description": "Deploy a new DAG File to the DAGs directory",
         "airflow_version": "None - Custom API",
-        "http_method": "POST",
+        "http_method": ["POST"],
         "post_body_description": "dag_file - POST Body Element - REQUIRED",
         "form_enctype": "multipart/form-data",
         "arguments": [],
