@@ -231,6 +231,33 @@ Once you deploy the plugin and restart the web server, you can start to use the 
 
 This web page will show the Endpoints supported and provide a form for you to test submitting to them.
  
+[version](#version)
+[rest_api_plugin_version](#rest_api_plugin_version)
+[render](#render)
+[variables](#variables)
+[connections](#connections)
+[pause](#pause)
+[unpause](#unpause)
+[task_failed_deps](#task_failed_deps)
+[trigger_dag](#trigger_dag)
+[test](#test)
+[dag_state](#dag_state)
+[run](#run)
+[list_tasks](#list_tasks)
+[backfill](#backfill)
+[list_dags](#list_dags)
+[kerberos](#kerberos)
+[worker](#worker)
+[flower](#flower)
+[scheduler](#scheduler)
+[task_state](#task_state)
+[pool](#pool)
+[serve_logs](#serve_logs)
+[clear](#clear)
+[deploy_dag](#deploy_dag)
+[refresh_dag](#refresh_dag)
+[refresh_all_dags](#refresh_all_dags)
+
 #### version
 
 Gets the version of Airflow currently running. Supports both http GET and POST methods.
