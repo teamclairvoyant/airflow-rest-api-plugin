@@ -227,13 +227,11 @@ Please refer [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/en/l
 
 Once you deploy the plugin and restart the web server, you can start to use the REST API. Bellow you will see the endpoints that are supported. In addition, you can also interact with the REST API from the Airflow Web Server. When you reload the page, you will see a link under the Admin tab called "REST API". Clicking on the link will navigate you to the following URL:
 
-http://{AIRFLOW_HOST}:{AIRFLOW_PORT}/admin/rest_api/
+`http://{AIRFLOW_HOST}:{AIRFLOW_PORT}/admin/rest_api/`
 
 This web page will show the Endpoints supported and provide a form for you to test submitting to them.
  
-#### Endpoints
-
-##### version
+#### version
 
 Gets the version of Airflow currently running. Supports both http GET and POST methods.
 
@@ -249,7 +247,7 @@ None
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=version
 
-##### rest_api_plugin_version
+#### rest_api_plugin_version
 
 Displays the version of this REST API Plugin you're using.  Supports both http GET and POST methods.
 
@@ -265,7 +263,7 @@ None
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
 
-##### render
+#### render
 
 Render a task instance's template(s).  Supports both http GET and POST methods.
 
@@ -289,7 +287,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=render
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05&subdir=value
 
-##### variables
+#### variables
 
 CRUD operations on variables.  Supports both http GET and POST methods.
 
@@ -326,7 +324,7 @@ For setting a variable like `myVar1=myValue1` use
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=variables&cmd=set&key=myVar1&value=myValue1` 
 
-##### connections
+#### connections
 
 List/Add/Delete connections.  Supports both http GET and POST methods.
 
@@ -354,7 +352,7 @@ Available in Airflow Version: 1.8.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=connections`
 
-##### pause
+#### pause
 
 Pauses a DAG.  Supports both http GET and POST methods.
 
@@ -372,7 +370,7 @@ Available in Airflow Version: 1.7.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id`
 
-##### unpause
+#### unpause
 
 Resume a paused DAG.  Supports both http GET and POST methods.
 
@@ -390,7 +388,7 @@ Available in Airflow Version: 1.7.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id`
 
-##### task_failed_deps
+#### task_failed_deps
 
 Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).  Supports both http GET and POST methods.
 
@@ -412,7 +410,7 @@ Available in Airflow Version: 1.8.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
 
-##### trigger_dag
+#### trigger_dag
 
 Triggers a Dag to Run.  Supports both http GET and POST methods.
 
@@ -434,7 +432,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id&run_id=run_id_2016_01_01&conf=%7B%22key%22%3A%22value%22%7D
 ```
-##### test
+#### test
 
 Test a task instance. This will run a task without checking for dependencies or recording it's state in the database.
 
@@ -460,7 +458,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
 
-##### dag_state
+#### dag_state
 
 Get the status of a dag run.  Supports both http GET and POST methods.
 
@@ -480,7 +478,7 @@ Available in Airflow Version: 1.8.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=2017-01-02T03:04:05`
 
-##### run
+#### run
 
 Run a single task instance. Supports both http GET and POST methods.
 
@@ -522,7 +520,7 @@ Available in Airflow Version: 1.0.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
 
-##### list_tasks
+#### list_tasks
 
 List the tasks within a DAG. Supports both http GET and POST methods.
 
@@ -542,7 +540,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id`
 
-##### backfill
+#### backfill
 
 Run subsections of a DAG for a specified date range. Supports both http GET and POST methods.
 
@@ -582,7 +580,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id`
 
-##### list_dags
+#### list_dags
 
 List all the DAGs. Supports both http GET and POST methods.
 
@@ -600,7 +598,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags`
 
-##### kerberos
+#### kerberos
 
 Start a kerberos ticket renewer. Supports both http GET and POST methods.
 
@@ -628,7 +626,7 @@ Available in Airflow Version: 1.6.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos`
 
-##### worker
+#### worker
 
 Start a Celery worker node. Supports both http GET and POST methods.
 
@@ -658,7 +656,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=worker`
 
-##### flower
+#### flower
 
 Start a Celery worker node. Supports both http GET and POST methods.
 
@@ -690,7 +688,7 @@ Available in Airflow Version: 1.0.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=flower`
 
-##### scheduler
+#### scheduler
 
 Start a scheduler instance. Supports both http GET and POST methods.
 
@@ -724,7 +722,7 @@ Available in Airflow Version: 1.0.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler`
 
-##### task_state
+#### task_state
 
 Get the status of a task instance. Supports both http GET and POST methods.
 
@@ -746,7 +744,7 @@ Available in Airflow Version: 1.0.0 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
 
-##### pool
+#### pool
 
 CRUD operations on pools. Supports both http GET and POST methods.
 
@@ -777,7 +775,7 @@ For setting a `myTestpool` with a slot count of `10` and with `myTestpoolDescrip
 `http://{HOST}:{PORT}/admin/rest_api/api?api=pool&cmd=set&pool_name=myTestpool&slot_count=10&description=myTestpoolDescription`
 
 
-##### serve_logs
+#### serve_logs
 
 Serve logs generate by worker. Supports both http GET and POST methods.
 
@@ -793,7 +791,7 @@ None
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs`
 
-##### clear
+#### clear
 
 Clear a set of task instance, as if they never ran. Supports both http GET and POST methods.
 
@@ -829,7 +827,7 @@ Available in Airflow Version: 0.1 or greater
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=clear`
 
-##### deploy_dag
+#### deploy_dag
 
 Deploy a new DAG. Supports both http GET and POST methods.
 
@@ -860,7 +858,7 @@ Body: dag_file=path_to_file&force=on
 
 `curl -X POST -H 'Content-Type: multipart/form-data' -F 'dag_file=@/path/to/dag.py' -F 'force=on' http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag`
 
-##### refresh_dag
+#### refresh_dag
 
 Refresh a DAG. Supports both http GET and POST methods.
 
@@ -876,7 +874,7 @@ Available in Airflow Version: None - Custom API
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id`
 
-##### refresh_all_dags
+#### refresh_all_dags
 
 Refresh all DAGs. Supports both http GET and POST methods.
 
