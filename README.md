@@ -239,7 +239,7 @@ Gets the version of Airflow currently running. Supports both http GET and POST m
 
 Available in Airflow Version: 1.0.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=version
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=version`
 
 Query Arguments:
 
@@ -255,7 +255,7 @@ Displays the version of this REST API Plugin you're using.  Supports both http G
 
 Available in Airflow Version: None - Custom API
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version`
 
 Query Arguments:
 
@@ -271,7 +271,7 @@ Render a task instance's template(s).  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.7.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=render
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=render`
 
 Query Arguments:
     
@@ -295,7 +295,7 @@ CRUD operations on variables.  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.7.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=variables
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=variables`
 
 Query Arguments:
 
@@ -332,7 +332,7 @@ List/Add/Delete connections.  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.8.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=connections
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=connections`
 
 Query Arguments:
 
@@ -360,7 +360,7 @@ Pauses a DAG.  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.7.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pause
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=pause`
 
 Query Arguments:
 
@@ -378,7 +378,7 @@ Resume a paused DAG.  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.7.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=unpause
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=unpause`
 
 Query Arguments:
 
@@ -396,7 +396,7 @@ Returns the unmet dependencies for a task instance from the perspective of the s
 
 Available in Airflow Version: 1.8.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps`
 
 Query Arguments:
 
@@ -416,7 +416,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_i
 
 Triggers a Dag to Run.  Supports both http GET and POST methods.
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag`
 
 Available in Airflow Version: 1.6.0 or greater
 
@@ -440,7 +440,7 @@ Test a task instance. This will run a task without checking for dependencies or 
 
 Available in Airflow Version: 0.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=test
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=test`
 
 Query Arguments:
 
@@ -466,7 +466,7 @@ Get the status of a dag run.  Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.8.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state`
 
 Query Arguments:
 
@@ -486,7 +486,7 @@ Run a single task instance. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.0.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=run
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=run`
 
 Query Arguments:
 
@@ -528,7 +528,7 @@ List the tasks within a DAG. Supports both http GET and POST methods.
 
 Available in Airflow Version: 0.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks`
 
 Query Arguments:
 
@@ -548,7 +548,7 @@ Run subsections of a DAG for a specified date range. Supports both http GET and 
 
 Available in Airflow Version: 0.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=backfill
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=backfill`
 
 Query Arguments:
 
@@ -588,7 +588,7 @@ List all the DAGs. Supports both http GET and POST methods.
 
 Available in Airflow Version: 0.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags`
 
 Query Arguments:
 
@@ -606,7 +606,7 @@ Start a kerberos ticket renewer. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.6.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos`
 
 Query Arguments:
 
@@ -632,7 +632,7 @@ http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
 
 Start a Celery worker node. Supports both http GET and POST methods.
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=worker
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=worker`
 
 Available in Airflow Version: 0.1 or greater
 
@@ -664,7 +664,7 @@ Start a Celery worker node. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.0.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=flower
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=flower`
 
 Query Arguments:
 
@@ -696,7 +696,7 @@ Start a scheduler instance. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.0.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler`
 
 Query Arguments:
 
@@ -730,7 +730,7 @@ Get the status of a task instance. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.0.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=task_state
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_state`
 
 Query Arguments:
 
@@ -752,7 +752,7 @@ CRUD operations on pools. Supports both http GET and POST methods.
 
 Available in Airflow Version: 1.8.0 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=pool
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=pool`
 
 Query Arguments:
 
@@ -783,7 +783,7 @@ Serve logs generate by worker. Supports both http GET and POST methods.
 
 Available in Airflow Version: 0.1 or greater
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs`
 
 Query Arguments:
 
@@ -799,7 +799,7 @@ Clear a set of task instance, as if they never ran. Supports both http GET and P
 
 Available in Airflow Version: 0.1 or greater 
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=clear
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=clear`
 
 Query Arguments:
 
@@ -865,7 +865,7 @@ Refresh a DAG. Supports both http GET and POST methods.
 
 Available in Airflow Version: None - Custom API
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag`
 
 Query Arguments:
 
@@ -881,7 +881,7 @@ Refresh all DAGs. Supports both http GET and POST methods.
 
 Available in Airflow Version: <= 1.9 - Custom API
 
-GET - http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags
+GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags`
 
 Query Arguments:
 
