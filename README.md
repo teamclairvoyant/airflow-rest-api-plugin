@@ -298,7 +298,7 @@ Available in Airflow Version: 1.7.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=variables`
 
 **Query Arguments:**
-
+```
 * set (optional) - Sets a variable. This requires passing the `cmd`, `key` and `value` parameters. Please see the example below.
     * cmd - string - Only allowed value is `cmd=set`
     * key - string - name of the variable
@@ -315,7 +315,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=variables`
 * export (optional) - string - Export variables from JSON file
 
 * delete (optional) - string - Delete a variable
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables
@@ -335,7 +335,7 @@ Available in Airflow Version: 1.8.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=connections`
 
 **Query Arguments:**
-
+```
 * list (optional) - boolean - List all connections
 
 * add (optional) - string - Add a connection
@@ -349,7 +349,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=connections`
 * conn_type (optional) - string - Connection type, required to add a connection without conn_uri
 
 * conn_extra (optional) - string - Connection 'Extra' field, optional when adding a connection
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=connections
@@ -363,11 +363,11 @@ Available in Airflow Version: 1.7.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=pause`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id
@@ -381,11 +381,11 @@ Available in Airflow Version: 1.7.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=unpause`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id
@@ -399,7 +399,7 @@ Available in Airflow Version: 1.8.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
      
 * task_id - string - The id of the task
@@ -407,7 +407,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps`
 * execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
@@ -421,13 +421,13 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag`
 Available in Airflow Version: 1.6.0 or greater
 
 **Query Arguments:**
-    
+```   
 * dag_id - The DAG ID of the DAG you want to trigger
      
 * run_id (Optional) - The RUN ID to use for the DAG run
 
 * conf (Optional) - Some configuration to pass to the DAG you trigger - (URL Encoded JSON)
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=trigger_dag&dag_id=test_id
@@ -443,7 +443,7 @@ Available in Airflow Version: 0.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=test`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
      
 * task_id - string - The id of the task
@@ -455,7 +455,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=test`
 * dryrun (optional) - boolean - Perform a dry run
 
 * task_params (optional) - string - Sends a JSON params dict to the task
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
@@ -469,13 +469,13 @@ Available in Airflow Version: 1.8.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
 
 * execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=2017-01-02T03:04:05
@@ -489,7 +489,7 @@ Available in Airflow Version: 1.0.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=run`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
      
 * task_id - string - The id of the task
@@ -517,7 +517,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=run`
 * ship_dag (optional) - boolean - Pickles (serializes) the DAG and ships it to the worker
 
 * pickle (optional) - string - Serialized pickle object of the entire dag (used internally)
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
@@ -531,13 +531,13 @@ Available in Airflow Version: 0.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
      
 * tree (optional) - boolean - Tree view
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id
@@ -551,7 +551,7 @@ Available in Airflow Version: 0.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=backfill`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
 
 * task_regex (optional) - string - The regex to filter specific task_ids to backfill (optional)
@@ -577,7 +577,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=backfill`
 * pool (optional) - string - Resource pool to use
 
 * dry_run (optional) - boolean - Perform a dry run
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id
@@ -591,11 +591,11 @@ Available in Airflow Version: 0.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags`
 
 **Query Arguments:**
-
+```
 * subdir (optional) - string - File location or directory from which to look for the dag
 
 * report (optional) - boolean - Show DagBag loading report
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
@@ -609,7 +609,7 @@ Available in Airflow Version: 1.6.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos`
 
 **Query Arguments:**
-
+```
 * principal (optional) - string - kerberos principal
 
 * keytab (optional) - string - keytab
@@ -623,7 +623,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos`
 * stderr (optional) - string - Redirect stderr to this file
 
 * log-file (optional) - string - Location of the log file
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
@@ -637,7 +637,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=worker`
 Available in Airflow Version: 0.1 or greater
 
 **Query Arguments:**
-
+```
 * do_pickle (optional) - boolean - Attempt to pickle the DAG object to send over to the workers, instead of letting workers run their version of the code.
 
 * queues (optional) - string - Comma delimited list of queues to serve
@@ -653,7 +653,7 @@ Available in Airflow Version: 0.1 or greater
 * stderr (optional) - string - Redirect stderr to this file
 
 * log-file (optional) - string - Location of the log file
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=worker
@@ -667,7 +667,7 @@ Available in Airflow Version: 1.0.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=flower`
 
 **Query Arguments:**
-
+```
 * hostname (optional) - string - Set the hostname on which to run the server
 
 * port (optional) - string - The port on which to run the server
@@ -685,7 +685,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=flower`
 * stderr (optional) - string - Redirect stderr to this file
 
 * log-file (optional) - string - Location of the log file
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=flower
@@ -699,7 +699,7 @@ Available in Airflow Version: 1.0.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler`
 
 **Query Arguments:**
-
+```
 * dag_id (optional) - string - The id of the dag
 
 * subdir (optional) - string - File location or directory from which to look for the dag
@@ -719,7 +719,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler`
 * stderr (optional) - string - Redirect stderr to this file
 
 * log-file (optional) - string - Location of the log file
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
@@ -733,7 +733,7 @@ Available in Airflow Version: 1.0.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_state`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
      
 * task_id - string - The id of the task
@@ -741,7 +741,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=task_state`
 * execution_date - string - The execution date of the DAG (Example: 2017-01-02T03:04:05)
 
 * subdir (optional) - string - File location or directory from which to look for the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
@@ -755,7 +755,7 @@ Available in Airflow Version: 1.8.0 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=pool`
 
 **Query Arguments:**
-
+```
 * set (optional) - Set pool name, slot count and description respectively. This requires passing the `cmd`, `pool_name`, `slot_count` and `description` parameters. Please see the example below.
     * cmd - string - Only allowed value is `cmd=set`
     * pool_name - string - name of the Pool
@@ -765,7 +765,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=pool`
 * get (optional) - string - Get pool info
 
 * delete (optional) - string - Delete a pool
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=pool
@@ -802,7 +802,7 @@ Available in Airflow Version: 0.1 or greater
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=clear`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
 
 * task_regex (optional) - string - The regex to filter specific task_ids to backfill (optional)
@@ -824,7 +824,7 @@ GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=clear`
 * only_running (optional) - boolean - Only running jobs
 
 * exclude_subdags (optional) - boolean - Exclude subdags
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=clear
@@ -868,9 +868,9 @@ Available in Airflow Version: None - Custom API
 GET - `http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag`
 
 **Query Arguments:**
-
+```
 * dag_id - string - The id of the dag
-
+```
 Examples:
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id
