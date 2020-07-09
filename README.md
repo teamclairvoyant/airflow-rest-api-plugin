@@ -271,9 +271,9 @@ Available in Airflow Version: 1.0.0 or greater
 None
 
 **Examples:**
-
+```
 http://{HOST}:{PORT}/admin/rest_api/api?api=version
-
+```
 #### rest_api_plugin_version
 
 Displays the version of this REST API Plugin you're using.  Supports both http GET and POST methods.
@@ -287,9 +287,9 @@ Available in Airflow Version: None - Custom API
 None
 
 **Examples:**
-
+```
 http://{HOST}:{PORT}/admin/rest_api/api?api=rest_api_plugin_version
-
+```
 #### render
 
 Render a task instance's template(s).  Supports both http GET and POST methods.
@@ -309,11 +309,11 @@ Available in Airflow Version: 1.7.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
+```
 http://{HOST}:{PORT}/admin/rest_api/api?api=render
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=render&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05&subdir=value
-
+```
 #### variables
 
 CRUD operations on variables.  Supports both http GET and POST methods.
@@ -342,11 +342,11 @@ Available in Airflow Version: 1.7.1 or greater
 * delete (optional) - string - Delete a variable
 ```
 **Examples:**
-
+```
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables
 
 http://{HOST}:{PORT}/admin/rest_api/api?api=variables&cmd=set&key=value&value=value&get=value&json&default=value&import=value&export=value&delete=value
-
+```
 For setting a variable like `myVar1=myValue1` use
 
 `http://{HOST}:{PORT}/admin/rest_api/api?api=variables&cmd=set&key=myVar1&value=myValue1` 
@@ -376,9 +376,9 @@ Available in Airflow Version: 1.8.0 or greater
 * conn_extra (optional) - string - Connection 'Extra' field, optional when adding a connection
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=connections`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=connections
+```
 #### pause
 
 Pauses a DAG.  Supports both http GET and POST methods.
@@ -394,9 +394,9 @@ Available in Airflow Version: 1.7.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=pause&dag_id=test_id
+```
 #### unpause
 
 Resume a paused DAG.  Supports both http GET and POST methods.
@@ -412,9 +412,9 @@ Available in Airflow Version: 1.7.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=unpause&dag_id=test_id
+```
 #### task_failed_deps
 
 Returns the unmet dependencies for a task instance from the perspective of the scheduler. In other words, why a task instance doesn't get scheduled and then queued by the scheduler, and then run by an executor).  Supports both http GET and POST methods.
@@ -434,9 +434,9 @@ Available in Airflow Version: 1.8.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_failed_deps&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
+```
 #### trigger_dag
 
 Triggers a Dag to Run.  Supports both http GET and POST methods.
@@ -482,9 +482,9 @@ Available in Airflow Version: 0.1 or greater
 * task_params (optional) - string - Sends a JSON params dict to the task
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=test&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
+```
 #### dag_state
 
 Get the status of a dag run.  Supports both http GET and POST methods.
@@ -502,9 +502,9 @@ Available in Airflow Version: 1.8.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=2017-01-02T03:04:05`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=dag_state&dag_id=test_id&execution_date=2017-01-02T03:04:05
+```
 #### run
 
 Run a single task instance. Supports both http GET and POST methods.
@@ -544,9 +544,9 @@ Available in Airflow Version: 1.0.0 or greater
 * pickle (optional) - string - Serialized pickle object of the entire dag (used internally)
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=run&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
+```
 #### list_tasks
 
 List the tasks within a DAG. Supports both http GET and POST methods.
@@ -564,9 +564,9 @@ Available in Airflow Version: 0.1 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=list_tasks&dag_id=test_id
+```
 #### backfill
 
 Run subsections of a DAG for a specified date range. Supports both http GET and POST methods.
@@ -604,9 +604,9 @@ Available in Airflow Version: 0.1 or greater
 * dry_run (optional) - boolean - Perform a dry run
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=backfill&dag_id=test_id
+```
 #### list_dags
 
 List all the DAGs. Supports both http GET and POST methods.
@@ -622,9 +622,9 @@ Available in Airflow Version: 0.1 or greater
 * report (optional) - boolean - Show DagBag loading report
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=list_dags
+```
 #### kerberos
 
 Start a kerberos ticket renewer. Supports both http GET and POST methods.
@@ -650,9 +650,9 @@ Available in Airflow Version: 1.6.0 or greater
 * log-file (optional) - string - Location of the log file
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=kerberos
+```
 #### worker
 
 Start a Celery worker node. Supports both http GET and POST methods.
@@ -680,9 +680,9 @@ Available in Airflow Version: 0.1 or greater
 * log-file (optional) - string - Location of the log file
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=worker`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=worker
+```
 #### flower
 
 Start a Celery worker node. Supports both http GET and POST methods.
@@ -712,9 +712,9 @@ Available in Airflow Version: 1.0.0 or greater
 * log-file (optional) - string - Location of the log file
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=flower`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=flower
+```
 #### scheduler
 
 Start a scheduler instance. Supports both http GET and POST methods.
@@ -746,9 +746,9 @@ Available in Airflow Version: 1.0.0 or greater
 * log-file (optional) - string - Location of the log file
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=scheduler
+```
 #### task_state
 
 Get the status of a task instance. Supports both http GET and POST methods.
@@ -768,9 +768,9 @@ Available in Airflow Version: 1.0.0 or greater
 * subdir (optional) - string - File location or directory from which to look for the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=task_state&dag_id=value&task_id=value&execution_date=2017-01-02T03:04:05
+```
 #### pool
 
 CRUD operations on pools. Supports both http GET and POST methods.
@@ -815,9 +815,9 @@ Available in Airflow Version: 0.1 or greater
 None
 
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=serve_logs
+```
 #### clear
 
 Clear a set of task instance, as if they never ran. Supports both http GET and POST methods.
@@ -851,9 +851,9 @@ Available in Airflow Version: 0.1 or greater
 * exclude_subdags (optional) - boolean - Exclude subdags
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=clear`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=clear
+```
 #### deploy_dag
 
 Deploy a new DAG. Supports both http GET and POST methods.
@@ -898,9 +898,9 @@ Available in Airflow Version: None - Custom API
 * dag_id - string - The id of the dag
 ```
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_dag&dag_id=test_id
+```
 #### refresh_all_dags
 
 Refresh all DAGs. Supports both http GET and POST methods.
@@ -914,9 +914,9 @@ Available in Airflow Version: <= 1.9 - Custom API
 None
 
 **Examples:**
-
-`http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags`
-
+```
+http://{HOST}:{PORT}/admin/rest_api/api?api=refresh_all_dags
+```
 #### API Response
 
 The API's will all return a common response object. It is a JSON object with the following entries in it:
