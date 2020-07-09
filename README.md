@@ -130,8 +130,9 @@ The REST API client supports a simple token based authentication mechanism where
 Once the steps above have been followed to enable authentication, users will need to pass a specific header along with their request to properly call the REST API. The header name is: rest_api_plugin_http_token
 
 **Example CURL Command:**
-
-    curl --header "rest_api_plugin_http_token: changeme" http://{HOST}:{PORT}/admin/rest_api/api?api=version
+```
+curl --header "rest_api_plugin_http_token: changeme" http://{HOST}:{PORT}/admin/rest_api/api?api=version
+```
 
 #### What happens when you fail to Authenticate?
 
@@ -882,9 +883,9 @@ Body: dag_file=path_to_file&force=on
 ```
 
 **CURL Example:**
-
-`curl -X POST -H 'Content-Type: multipart/form-data' -F 'dag_file=@/path/to/dag.py' -F 'force=on' http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag`
-
+```
+curl -X POST -H 'Content-Type: multipart/form-data' -F 'dag_file=@/path/to/dag.py' -F 'force=on' http://{HOST}:{PORT}/admin/rest_api/api?api=deploy_dag
+```
 #### refresh_dag
 
 Refresh a DAG. Supports both http GET and POST methods.
